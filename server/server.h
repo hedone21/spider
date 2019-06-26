@@ -24,11 +24,18 @@
 #define __SERVER_H__
 
 #include <wayland-server.h>
+#include <libweston-6/compositor.h>
 
-struct server {
+struct spider_server {
+	struct wl_display *display;
+	struct wl_event_loop *event_loop;
 
+	struct weston_compositor *compositor;	
+	struct weston_layer background_layer;
+
+	char *client;
 };
 
-int server_initialize(struct wl_display *display, struct wl_event_loop *event_loop, struct server *s);
+int server_initialize(struct spider_server *server);
 
 #endif /* __SERVER_H__ */
