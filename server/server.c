@@ -524,6 +524,8 @@ static void xdg_toplevel_request_resize(
 static void xdg_toplevel_request_maximize(
 		struct wl_listener *listener, void *data) {
 	spider_dbg("MAXIMIZE is requested\n");
+	struct spider_view *view = wl_container_of(listener, view, request_maximize);
+	wlr_xdg_toplevel_set_maximized(view->xdg_surface, true);
 }
 
 static void xdg_toplevel_request_minimize(
@@ -534,6 +536,8 @@ static void xdg_toplevel_request_minimize(
 static void xdg_toplevel_request_fullscreen(
 		struct wl_listener *listener, void *data) {
 	spider_dbg("FULLSCREEN is requested\n");
+	struct spider_view *view = wl_container_of(listener, view, request_fullscreen);
+	wlr_xdg_toplevel_set_fullscreen(view->xdg_surface, true);
 }
 
 static void server_new_xdg_surface(struct wl_listener *listener, void *data) {
