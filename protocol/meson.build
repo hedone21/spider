@@ -28,7 +28,7 @@ foreach p : protocols_xml
     if output_type == 'client-header'
       output_file = '@0@-client-protocol.h'.format(base_file)
     elif output_type == 'server-header'
-      output_file = '@0@-server-protocol.h'.format(base_file)
+      output_file = '@0@-protocol.h'.format(base_file)
     else
       output_file = '@0@-protocol.c'.format(base_file)
       if scanner_dep.version().version_compare('< 1.14.91')
