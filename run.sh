@@ -1,4 +1,3 @@
 #!/bin/bash
 
-#$PWD/build/server/spider-server -s [client]
-$PWD/build/server/spider-server
+$PWD/build/server/spider-server -s $PWD/build/client-gtk/client
