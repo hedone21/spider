@@ -1,5 +1,7 @@
 server_src = [
+  'main.c',
   'server.c',
+  'cursor.c',
   ]
 
 server_dep = [

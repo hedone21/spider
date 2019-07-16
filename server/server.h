@@ -26,18 +26,48 @@
 #define __SERVER_H__
 
 #include <wayland-server.h>
-#include <libweston-6/compositor.h>
+#include <wlr/render/wlr_renderer.h>
+#include <wlr/types/wlr_cursor.h>
+#include <wlr/types/wlr_compositor.h>
+#include <wlr/types/wlr_data_device.h>
+#include <wlr/types/wlr_input_device.h>
+#include <wlr/types/wlr_keyboard.h>
+#include <wlr/types/wlr_matrix.h>
+#include <wlr/types/wlr_output.h>
+#include <wlr/types/wlr_output_layout.h>
+#include <wlr/types/wlr_pointer.h>
+#include <wlr/types/wlr_seat.h>
+#include <wlr/types/wlr_xcursor_manager.h>
+#include <wlr/types/wlr_xdg_shell.h>
+/* TODO: Unstable wayland interfaces
+#include <wlr/types/wlr_layer_shell_v1.h>
+#include <wlr/types/wlr_xdg_output_v6.h>
+*/
+#include <wlr/util/log.h>
+#include <wlr/backend.h>
+#include <xkbcommon/xkbcommon.h>
+#include <stdbool.h>
+
+struct spider_options {
+	char *shell;
+	bool debug;
+	bool verbose;
+};
+
+extern struct spider_options g_options;
 
 /* For brevity's sake, struct members are annotated where they are used. */
 enum spider_cursor_mode {
-	spider_CURSOR_PASSTHROUGH,
-	spider_CURSOR_MOVE,
-	spider_CURSOR_RESIZE,
+	SPIDER_CURSOR_PASSTHROUGH,
+	SPIDER_CURSOR_MOVE,
+	SPIDER_CURSOR_RESIZE,
 };
 
 struct spider_server {
 	struct wl_display *wl_display;
+	struct wl_event_loop *wl_event_loop;
 	struct wlr_backend *backend;
+	struct wlr_backend *noop_backend;
 	struct wlr_renderer *renderer;
 
 	struct wlr_xdg_shell *xdg_shell;
@@ -65,6 +95,12 @@ struct spider_server {
 	struct wlr_output_layout *output_layout;
 	struct wl_list outputs;
 	struct wl_listener new_output;
+
+	/* Unstable Interface */
+	struct wlr_layer_shell_v1 *layer_shell;
+	struct wl_listener *layer_shell_surface;
+	struct wlr_xdg_shell_v6 *xdg_shell_v6;
+	struct wl_listener *wlr_xdg_shell_v6_surface;
 };
 
 struct spider_output {
@@ -83,6 +119,9 @@ struct spider_view {
 	struct wl_listener destroy;
 	struct wl_listener request_move;
 	struct wl_listener request_resize;
+	struct wl_listener request_maximize;
+	struct wl_listener request_minimize;
+	struct wl_listener request_fullscreen;
 	bool mapped;
 	int x, y;
 };
@@ -95,5 +134,10 @@ struct spider_keyboard {
 	struct wl_listener modifiers;
 	struct wl_listener key;
 };
+
+int spider_preinit_server(struct spider_server *server);
+int spider_init_server(struct spider_server *server);
+void focus_view(struct spider_view *view, struct wlr_surface *surface);
+struct spider_view *desktop_view_at(struct spider_server *server, double lx, double ly, struct wlr_surface **surface, double *sx, double *sy);
 
 #endif /* __SERVER_H__ */
