@@ -32,6 +32,7 @@
 #include "server/server.h"
 #include "server/cursor.h"
 #include "common/log.h"
+#include "common/global_vars.h"
 
 void focus_view(struct spider_view *view, struct wlr_surface *surface) {
 	/* Note: this function only deals with keyboard focus. */
@@ -685,6 +686,9 @@ int spider_init_server(struct spider_server *server)
 	/* Set the WAYLAND_DISPLAY environment variable to our socket and run the
 	 * startup command if requested. */
 	setenv("WAYLAND_DISPLAY", socket, true);
+	if (!getenv(SPIDER_WEB_URL)) {
+		setenv(SPIDER_WEB_URL, SPIDER_WEB_URL_PATH, 0);
+	}
 	if (g_options.shell) {
 		if (fork() == 0) {
 			execl("/bin/sh", "/bin/sh", "-c", g_options.shell, (void *)NULL);
