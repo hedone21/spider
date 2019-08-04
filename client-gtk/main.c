@@ -55,6 +55,7 @@ int main(int argc, char* argv[])
 
 	win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_default_size(GTK_WINDOW(win), 1280, 720);
+	gtk_window_set_decorated(GTK_WINDOW(win), FALSE);
 	gtk_window_fullscreen(GTK_WINDOW(win));
 
 	web = WEBKIT_WEB_VIEW(webkit_web_view_new());
