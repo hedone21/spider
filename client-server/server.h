@@ -1,6 +1,4 @@
 /*
- * Copyright (c) 2014 Jari Vetoniemi
- * Copyright (c) 2017, 2018 Drew DeVault
  * Copyright (c) 2019 Minyoung.Go <hedone21@gmail.com>
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -22,11 +20,9 @@
  * SOFTWARE.
  */
 
-#ifndef __SPIDER_SERVER_CURSOR_H__
-#define __SPIDER_SERVER_CURSOR_H__
+#ifndef __SPIDER_SERVER_SERVER_H__
+#define __SPIDER_SERVER_SERVER_H__
 
-#include "server/server.h"
-
-int spider_create_cursor(struct spider_server *server);
+int start_server(const char *path);
 
 #endif

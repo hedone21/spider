@@ -1,6 +1,4 @@
 /*
- * Copyright (c) 2014 Jari Vetoniemi
- * Copyright (c) 2017, 2018 Drew DeVault
  * Copyright (c) 2019 Minyoung.Go <hedone21@gmail.com>
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -22,11 +20,18 @@
  * SOFTWARE.
  */
 
-#ifndef __SPIDER_SERVER_CURSOR_H__
-#define __SPIDER_SERVER_CURSOR_H__
+#include "client-server/server.h"
+#include "common/global_vars.h"
+#include "common/log.h"
 
-#include "server/server.h"
+int main(int argc, char *argv[])
+{
+	char *path;
+	path = getenv(SPIDER_CLIENT_SERVER_PATH);	
+	if (path == NULL) {
+		spider_err("Client server path is not set\n");
+		return -1;
+	}
 
-int spider_create_cursor(struct spider_server *server);
-
-#endif
+	start_server(path);
+}

@@ -22,8 +22,8 @@
  * SOFTWARE.
  */
 
-#ifndef __SERVER_H__
-#define __SERVER_H__
+#ifndef __SPIDER_SERVER_SERVER_H__
+#define __SPIDER_SERVER_SERVER_H__
 
 #include <wayland-server.h>
 #include <wlr/render/wlr_renderer.h>

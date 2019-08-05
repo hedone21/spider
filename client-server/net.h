@@ -1,6 +1,4 @@
 /*
- * Copyright (c) 2014 Jari Vetoniemi
- * Copyright (c) 2017, 2018 Drew DeVault
  * Copyright (c) 2019 Minyoung.Go <hedone21@gmail.com>
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -22,11 +20,14 @@
  * SOFTWARE.
  */
 
-#ifndef __SPIDER_SERVER_CURSOR_H__
-#define __SPIDER_SERVER_CURSOR_H__
+/* 
+ * This code is based on https://github.com/LambdaSchool/C-Web-Server.
+ */
 
-#include "server/server.h"
+#ifndef __SPIDER_CLIENT_SERVER_NET_H__
+#define __SPIDER_CLIENT_SERVER_NET_H__
 
-int spider_create_cursor(struct spider_server *server);
+void *get_in_addr(struct sockaddr *sa);
+int get_listener_socket(char *port);
 
 #endif
