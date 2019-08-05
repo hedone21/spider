@@ -20,6 +20,18 @@
  * SOFTWARE.
  */
 
-#define SPIDER_WEB_URL 			"SPIDER_WEB_URL"
-#define SPIDER_WEB_URL_PATH 		"localhost:8080"
-#define SPIDER_CLIENT_SERVER_PATH 	"SPIDER_CLIENT_SERVER_PATH"
+#include "client-server/server.h"
+#include "common/global_vars.h"
+#include "common/log.h"
+
+int main(int argc, char *argv[])
+{
+	char *path;
+	path = getenv(SPIDER_CLIENT_SERVER_PATH);	
+	if (path == NULL) {
+		spider_err("Client server path is not set\n");
+		return -1;
+	}
+
+	start_server(path);
+}

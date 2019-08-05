@@ -20,6 +20,14 @@
  * SOFTWARE.
  */
 
-#define SPIDER_WEB_URL 			"SPIDER_WEB_URL"
-#define SPIDER_WEB_URL_PATH 		"localhost:8080"
-#define SPIDER_CLIENT_SERVER_PATH 	"SPIDER_CLIENT_SERVER_PATH"
+/* 
+ * This code is based on https://github.com/LambdaSchool/C-Web-Server.
+ */
+
+#ifndef __SPIDER_CLIENT_SERVER_NET_H__
+#define __SPIDER_CLIENT_SERVER_NET_H__
+
+void *get_in_addr(struct sockaddr *sa);
+int get_listener_socket(char *port);
+
+#endif

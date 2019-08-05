@@ -20,6 +20,9 @@
  * SOFTWARE.
  */
 
-#define SPIDER_WEB_URL 			"SPIDER_WEB_URL"
-#define SPIDER_WEB_URL_PATH 		"localhost:8080"
-#define SPIDER_CLIENT_SERVER_PATH 	"SPIDER_CLIENT_SERVER_PATH"
+#ifndef __SPIDER_SERVER_SERVER_H__
+#define __SPIDER_SERVER_SERVER_H__
+
+int start_server(const char *path);
+
+#endif
