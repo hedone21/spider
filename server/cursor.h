@@ -22,6 +22,11 @@
  * SOFTWARE.
  */
 
+#ifndef __SPIDER_SERVER_CURSOR_H__
+#define __SPIDER_SERVER_CURSOR_H__
+
 #include "server/server.h"
 
 int spider_create_cursor(struct spider_server *server);
+
+#endif
