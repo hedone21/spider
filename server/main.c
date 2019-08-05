@@ -46,12 +46,13 @@ int main(int argc, char *argv[])
 		{"verbose", no_argument, NULL, 'V'},
 		{"version", no_argument, NULL, 'v'},
 		{"shell", required_argument, NULL, 's'},
+		{"server", required_argument, NULL, 'r'},
 		{0, 0, 0, 0}
 	};
 
 	int c;
 	int option_index = 0;
-	while ((c = getopt_long(argc, argv, "hdVvs:", long_options, &option_index)) != -1) {
+	while ((c = getopt_long(argc, argv, "hdVvs:r:", long_options, &option_index)) != -1) {
 		int arglen;
 
 		switch (c) {
@@ -72,6 +73,15 @@ int main(int argc, char *argv[])
 
 			g_options.shell = malloc(sizeof(char) * (arglen + 1));
 			strcpy(g_options.shell, optarg);
+			break;
+		case 'r':
+			arglen = strlen(optarg);
+			if (arglen >= PATH_MAX) {
+				return -1;
+			}
+
+			g_options.server = malloc(sizeof(char) * (arglen + 1));
+			strcpy(g_options.server, optarg);
 			break;
 		case 'h': /* fall through */
 		default:

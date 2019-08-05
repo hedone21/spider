@@ -689,6 +689,13 @@ int spider_init_server(struct spider_server *server)
 	if (!getenv(SPIDER_WEB_URL)) {
 		setenv(SPIDER_WEB_URL, SPIDER_WEB_URL_PATH, 0);
 	}
+
+	if (g_options.server) {
+		if (fork() == 0) {
+			execl("/bin/sh", "/bin/sh", "-c", g_options.server, (void *)NULL);
+		}
+	}
+
 	if (g_options.shell) {
 		if (fork() == 0) {
 			execl("/bin/sh", "/bin/sh", "-c", g_options.shell, (void *)NULL);

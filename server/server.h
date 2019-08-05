@@ -50,6 +50,7 @@
 
 struct spider_options {
 	char *shell;
+	char *server;
 	bool debug;
 	bool verbose;
 };
