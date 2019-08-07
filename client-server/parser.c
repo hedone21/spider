@@ -33,16 +33,129 @@
 #include "common/log.h"
 
 #define BUF_MAX 65536
+#define RESP_BUF_MAX 1024 * 1024 * 4 // 4M
+
+static const char* get_http_method(http_parser *parser)
+{
+	const char *http_method = NULL;
+	switch (parser->method) {
+	case HTTP_DELETE:
+		http_method = "HTTP_METHOD";	
+		break;
+	case HTTP_GET:
+		http_method = "HTTP_GET";
+		break;
+	case HTTP_HEAD:
+		http_method = "HTTP_HEAD";
+		break;
+	case HTTP_POST:
+		http_method = "HTTP_POST";
+		break;
+	case HTTP_PUT:
+		http_method = "HTTP_PUT";
+		break;
+	case HTTP_CONNECT:
+		http_method = "HTTP_CONNECT";
+		break;
+	case HTTP_OPTIONS:
+		http_method = "HTTP_OPTIONS";
+		break;
+	case HTTP_TRACE:
+		http_method = "HTTP_TRACE";
+		break;
+	case HTTP_COPY:
+		http_method = "HTTP_COPY";
+		break;
+	case HTTP_LOCK:
+		http_method = "HTTP_LOCK";
+		break;
+	case HTTP_MKCOL:
+		http_method = "HTTP_MKCOL";
+		break;
+	case HTTP_MOVE:
+		http_method = "HTTP_MOVE";
+		break;
+	case HTTP_PROPFIND:
+		http_method = "HTTP_PROPFIND";
+		break;
+	case HTTP_PROPPATCH:
+		http_method = "HTTP_PROPPATCH";
+		break;
+	case HTTP_SEARCH:
+		http_method = "HTTP_SEARCH";
+		break;
+	case HTTP_UNLOCK:
+		http_method = "HTTP_UNLOCK";
+		break;
+	case HTTP_BIND:
+		http_method = "HTTP_BIND";
+		break;
+	case HTTP_REBIND:
+		http_method = "HTTP_REBIND";
+		break;
+	case HTTP_UNBIND:
+		http_method = "HTTP_UNBIND";
+		break;
+	case HTTP_ACL:
+		http_method = "HTTP_ACL";
+		break;
+	case HTTP_REPORT:
+		http_method = "HTTP_REPORT";
+		break;
+	case HTTP_MKACTIVITY:
+		http_method = "HTTP_MKACTIVITY";
+		break;
+	case HTTP_CHECKOUT:
+		http_method = "HTTP_CHECKOUT";
+		break;
+	case HTTP_MERGE:
+		http_method = "HTTP_MERGE";
+		break;
+	case HTTP_MSEARCH:
+		http_method = "HTTP_MSEARCH";
+		break;
+	case HTTP_NOTIFY:
+		http_method = "HTTP_NOTIFY";
+		break;
+	case HTTP_SUBSCRIBE:
+		http_method = "HTTP_SUBSCRIBE";
+		break;
+	case HTTP_UNSUBSCRIBE:
+		http_method = "HTTP_UNSUBSCRIBE";
+		break;
+	case HTTP_PATCH:
+		http_method = "HTTP_PATCH";
+		break;
+	case HTTP_PURGE:
+		http_method = "HTTP_PURGE";
+		break;
+	case HTTP_MKCALENDAR:
+		http_method = "HTTP_MKCALENDAR";
+		break;
+	case HTTP_LINK:
+		http_method = "HTTP_LINK";
+		break;
+	case HTTP_UNLINK:
+		http_method = "HTTP_UNLINK";
+		break;
+	case HTTP_SOURCE:
+		http_method = "HTTP_SOURCE";
+		break;
+	default:
+		spider_err("Unregistered http method\n");
+	}
+
+	return http_method;
+}
 
 static int on_url_cb(http_parser *parser, const char *at, size_t length)
 {
 	struct spider_client_info *info;
-	char url[BUF_MAX];
-	char html_path[PATH_MAX];
+	char url[BUF_MAX] = {0, };
+	char html_path[PATH_MAX] = {0, };
 	int html_fd;
 
-	const int response_buffer_size = 1024 * 1024 * 4; // 4M
-	char response[response_buffer_size];
+	char response[RESP_BUF_MAX] = {0, };
 	int bytes_recvd;
 
 	assert(parser);
@@ -55,7 +168,7 @@ static int on_url_cb(http_parser *parser, const char *at, size_t length)
 	}
 
 	strncpy(url, at, length);
-	spider_dbg("%s\n", url);
+	spider_dbg("%s(%s)\n", url, get_http_method(parser));
 
 	if (strncmp(url, "/", 2) == 0) {
 		strncpy(url, "/index.html", 12);
@@ -68,8 +181,8 @@ static int on_url_cb(http_parser *parser, const char *at, size_t length)
 
 	if ((html_fd = open(html_path, O_RDONLY)) != -1) {	
 		send(info->client_fd, "HTTP/1.0 200 OK\n\n", 17, 0);
-		while((bytes_recvd = read(html_fd, response, response_buffer_size)) > 0) {
-			spider_dbg("[response]\n%s\n", response);
+		while((bytes_recvd = read(html_fd, response, RESP_BUF_MAX)) > 0) {
+			// spider_dbg("[response]\n%s\n", response);
 			write(info->client_fd, response, bytes_recvd);
 		}
 	}else {
@@ -83,7 +196,7 @@ static int on_url_cb(http_parser *parser, const char *at, size_t length)
 
 static int on_status_cb(http_parser *parser, const char *at, size_t length)
 {
-	char status[BUF_MAX];
+	char status[BUF_MAX] = {0, };
 	assert(parser);
 
 	strncpy(status, at, length);
@@ -95,7 +208,7 @@ static int on_status_cb(http_parser *parser, const char *at, size_t length)
 
 static int on_header_field_cb(http_parser *parser, const char *at, size_t length)
 {
-	char header_field[BUF_MAX];
+	char header_field[BUF_MAX] = {0, };
 	assert(parser);
 
 	strncpy(header_field, at, length);
@@ -107,7 +220,7 @@ static int on_header_field_cb(http_parser *parser, const char *at, size_t length
 
 static int on_header_value_cb(http_parser *parser, const char *at, size_t length)
 {
-	char header_value[BUF_MAX];
+	char header_value[BUF_MAX] = {0, };
 	assert(parser);
 
 	strncpy(header_value, at, length);
@@ -119,7 +232,7 @@ static int on_header_value_cb(http_parser *parser, const char *at, size_t length
 
 static int on_body_cb(http_parser *parser, const char *at, size_t length)
 {
-	char body[BUF_MAX];
+	char body[BUF_MAX] = {0, };
 	assert(parser);
 
 	strncpy(body, at, length);

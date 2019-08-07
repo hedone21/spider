@@ -147,6 +147,8 @@ void handle_http_request(int fd, const char *path)
 		return;
 	}
 
+	// spider_dbg("%s\n", request);
+
 	nparsed = http_parser_execute(&parser, &parser_settings, request, bytes_recvd);
 
 	if (nparsed != bytes_recvd) {
