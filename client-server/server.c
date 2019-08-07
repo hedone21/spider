@@ -40,6 +40,8 @@
 #include <linux/limits.h>
 #include "client-server/server.h"
 #include "client-server/net.h"
+#include "client-server/parser.h"
+#include "client-server/http-parser/http_parser.h"
 #include "common/log.h"
 
 #define PORT "2580"
@@ -87,6 +89,27 @@ char *find_start_of_body(char *header)
 	///////////////////
 }
 
+static int on_url_cb(http_parser *parser, const char *at, size_t length)
+{
+	spider_dbg("%s\n", at);
+
+	return 0;
+}
+
+static int on_status_cb(http_parser *parser, const char *at, size_t length)
+{
+	spider_dbg("%s\n", at);
+
+	return 0;
+}
+
+static int on_body_cb(http_parser *parser, const char *at, size_t length)
+{
+	spider_dbg("%s\n", at);
+
+	return 0;
+}
+
 /**
  * Handle HTTP request and send response
  */
@@ -94,14 +117,27 @@ void handle_http_request(int fd, const char *path)
 {
 	const int request_buffer_size = 65536; // 64K
 	char request[request_buffer_size];
-	char *reqline[3];
-	const int response_buffer_size = 1024 * 1024 * 4; // 4M
-	char response[response_buffer_size];
-	int html_fd;
-	char html_path[PATH_MAX];
+	http_parser parser;
+	http_parser_settings parser_settings;
+	struct spider_client_info *info;
+	int nparsed;
+
+	info = calloc(1, sizeof(*info));
+	if (info == NULL) {
+		spider_err("allocation failed\n");
+		return;
+	}
+
+	parser_init(&parser, HTTP_REQUEST);
+	parser_settings_init(&parser_settings);
 
 	// Read request
 	int bytes_recvd = recv(fd, request, request_buffer_size - 1, 0);
+
+	info->root_path = path;
+	info->client_fd = fd;
+
+	parser.data = (void*)info;
 
 	if (bytes_recvd < 0) {
 		perror("recv");
@@ -111,37 +147,16 @@ void handle_http_request(int fd, const char *path)
 		return;
 	}
 
-	spider_dbg("===[http]===\n%s", request);
+	nparsed = http_parser_execute(&parser, &parser_settings, request, bytes_recvd);
 
-	reqline[0] = strtok(request, " \t\n");
-	if (strncmp(reqline[0], "GET\0", 4) == 0) {
-		reqline[1] = strtok(NULL, " \t");
-		reqline[2] = strtok(NULL, " \t\n");
-
-		if (strncmp(reqline[2], "HTTP/1.0", 8) != 0 && strncmp(reqline[2], "HTTP/1.1", 8) != 0) {
-			write(fd, "HTTP/1.0 400 Bad Request\n", 25);
-			return;
-		}
-
-		if (strncmp(reqline[1], "/\0", 2) == 0)
-			reqline[1] = "/index.html";
-
-		strncpy(html_path, path, PATH_MAX);
-		strncat(html_path, reqline[1], PATH_MAX);
-
-		spider_dbg("\nhttp method: %s\npath: %s\n", reqline[0], html_path);
-		if ((html_fd = open(html_path, O_RDONLY)) != -1) {
-			send(fd, "HTTP/1.0 200 OK\n\n", 17, 0);
-			while((bytes_recvd = read(html_fd, response, response_buffer_size)) > 0) {
-				write(fd, response, bytes_recvd);
-			}
-		}else {
-			write(fd, "HTTP/1.0 404 Not Found\n", 23); //FILE NOT FOUND
-		}
+	if (nparsed != bytes_recvd) {
+		goto connection_close;
 	}
 
-	shutdown(fd, SHUT_RDWR);
 	// (Stretch) If POST, handle the post request
+
+connection_close:
+	shutdown(fd, SHUT_RDWR);
 }
 
 int start_server(const char *path)

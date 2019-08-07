@@ -20,14 +20,12 @@
  * SOFTWARE.
  */
 
-#ifndef __SPIDER_SERVER_SERVER_H__
-#define __SPIDER_SERVER_SERVER_H__
+#ifndef __SPIDER_CLIENT_SERVER_PARSER_H__
+#define __SPIDER_CLIENT_SERVER_PARSER_H__
 
-struct spider_client_info {
-	const char *root_path;
-	int client_fd;
-};
+#include "client-server/http-parser/http_parser.h"
 
-int start_server(const char *path);
+void parser_init(http_parser *parser, enum http_parser_type type);
+void parser_settings_init(http_parser_settings *parser_settings);
 
 #endif
