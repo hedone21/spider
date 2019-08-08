@@ -27,6 +27,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <signal.h>
 #include <time.h>
 #include <unistd.h>
 #include "compositor/compositor.h"
@@ -100,6 +101,8 @@ static bool handle_keybinding(struct spider_compositor *compositor, xkb_keysym_t
 	switch (sym) {
 	case XKB_KEY_Escape:
 		wl_display_terminate(compositor->wl_display);
+		kill(compositor->client_server_pid, SIGKILL);
+		kill(compositor->client_shell_pid, SIGKILL);
 		break;
 	case XKB_KEY_F1:
 		/* Cycle to the next view */
@@ -690,9 +693,9 @@ int spider_init_compositor(struct spider_compositor *compositor)
 		setenv(SPIDER_WEB_URL, SPIDER_WEB_URL_PATH, 0);
 	}
 
-	if (g_options.compositor) {
+	if (g_options.server) {
 		if (fork() == 0) {
-			execl("/bin/sh", "/bin/sh", "-c", g_options.compositor, (void *)NULL);
+			execl("/bin/sh", "/bin/sh", "-c", g_options.server, (void *)NULL);
 		}
 	}
 

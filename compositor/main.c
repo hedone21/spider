@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
 		{"verbose", no_argument, NULL, 'V'},
 		{"version", no_argument, NULL, 'v'},
 		{"shell", required_argument, NULL, 's'},
-		{"compositor", required_argument, NULL, 'r'},
+		{"server", required_argument, NULL, 'r'},
 		{0, 0, 0, 0}
 	};
 
@@ -80,8 +80,8 @@ int main(int argc, char *argv[])
 				return -1;
 			}
 
-			g_options.compositor = malloc(sizeof(char) * (arglen + 1));
-			strcpy(g_options.compositor, optarg);
+			g_options.server = malloc(sizeof(char) * (arglen + 1));
+			strcpy(g_options.server, optarg);
 			break;
 		case 'h': /* fall through */
 		default:

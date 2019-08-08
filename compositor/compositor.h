@@ -50,7 +50,7 @@
 
 struct spider_options {
 	char *shell;
-	char *compositor;
+	char *server;
 	bool debug;
 	bool verbose;
 };
@@ -96,6 +96,9 @@ struct spider_compositor {
 	struct wlr_output_layout *output_layout;
 	struct wl_list outputs;
 	struct wl_listener new_output;
+
+	int client_server_pid;
+	int client_shell_pid;
 
 	/* Unstable Interface */
 	struct wlr_layer_shell_v1 *layer_shell;
