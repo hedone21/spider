@@ -25,7 +25,7 @@
 #include <string.h>
 #include <getopt.h>
 #include <linux/limits.h>
-#include "server/server.h"
+#include "compositor/compositor.h"
 
 struct spider_options g_options = {
 	.shell = NULL,
@@ -38,7 +38,7 @@ void help()
 
 int main(int argc, char *argv[]) 
 {
-	struct spider_server *server;
+	struct spider_compositor *compositor;
 
 	static struct option long_options[] = {
 		{"help", no_argument, NULL, 'h'},
@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
 		{"verbose", no_argument, NULL, 'V'},
 		{"version", no_argument, NULL, 'v'},
 		{"shell", required_argument, NULL, 's'},
-		{"server", required_argument, NULL, 'r'},
+		{"compositor", required_argument, NULL, 'r'},
 		{0, 0, 0, 0}
 	};
 
@@ -80,8 +80,8 @@ int main(int argc, char *argv[])
 				return -1;
 			}
 
-			g_options.server = malloc(sizeof(char) * (arglen + 1));
-			strcpy(g_options.server, optarg);
+			g_options.compositor = malloc(sizeof(char) * (arglen + 1));
+			strcpy(g_options.compositor, optarg);
 			break;
 		case 'h': /* fall through */
 		default:
@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 
-	server = calloc(1, sizeof(*server));
-	spider_preinit_server(server);
-	spider_init_server(server);
+	compositor = calloc(1, sizeof(*compositor));
+	spider_preinit_compositor(compositor);
+	spider_init_compositor(compositor);
 }

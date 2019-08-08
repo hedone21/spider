@@ -22,6 +22,6 @@ wlroots_version = '>=0.6'
 wlr_dep = dependency('wlroots', version: wlroots_version)
 
 subdir('protocol')
-subdir('server')
-subdir('client-gtk')
+subdir('compositor')
+subdir('client-shell')
 subdir('client-server')

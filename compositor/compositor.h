@@ -50,7 +50,7 @@
 
 struct spider_options {
 	char *shell;
-	char *server;
+	char *compositor;
 	bool debug;
 	bool verbose;
 };
@@ -64,7 +64,7 @@ enum spider_cursor_mode {
 	SPIDER_CURSOR_RESIZE,
 };
 
-struct spider_server {
+struct spider_compositor {
 	struct wl_display *wl_display;
 	struct wl_event_loop *wl_event_loop;
 	struct wlr_backend *backend;
@@ -106,14 +106,14 @@ struct spider_server {
 
 struct spider_output {
 	struct wl_list link;
-	struct spider_server *server;
+	struct spider_compositor *compositor;
 	struct wlr_output *wlr_output;
 	struct wl_listener frame;
 };
 
 struct spider_view {
 	struct wl_list link;
-	struct spider_server *server;
+	struct spider_compositor *compositor;
 	struct wlr_xdg_surface *xdg_surface;
 	struct wl_listener map;
 	struct wl_listener unmap;
@@ -129,16 +129,16 @@ struct spider_view {
 
 struct spider_keyboard {
 	struct wl_list link;
-	struct spider_server *server;
+	struct spider_compositor *compositor;
 	struct wlr_input_device *device;
 
 	struct wl_listener modifiers;
 	struct wl_listener key;
 };
 
-int spider_preinit_server(struct spider_server *server);
-int spider_init_server(struct spider_server *server);
+int spider_preinit_compositor(struct spider_compositor *compositor);
+int spider_init_compositor(struct spider_compositor *compositor);
 void focus_view(struct spider_view *view, struct wlr_surface *surface);
-struct spider_view *desktop_view_at(struct spider_server *server, double lx, double ly, struct wlr_surface **surface, double *sx, double *sy);
+struct spider_view *desktop_view_at(struct spider_compositor *compositor, double lx, double ly, struct wlr_surface **surface, double *sx, double *sy);
 
 #endif /* __SERVER_H__ */

@@ -25,8 +25,8 @@
 #ifndef __SPIDER_SERVER_CURSOR_H__
 #define __SPIDER_SERVER_CURSOR_H__
 
-#include "server/server.h"
+#include "compositor/compositor.h"
 
-int spider_create_cursor(struct spider_server *server);
+int spider_create_cursor(struct spider_compositor *compositor);
 
 #endif

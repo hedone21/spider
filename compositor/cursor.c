@@ -22,16 +22,16 @@
  * SOFTWARE.
  */
 
-#include "server/server.h"
-#include "server/cursor.h"
+#include "compositor/compositor.h"
+#include "compositor/cursor.h"
 
-static void process_cursor_move(struct spider_server *server, uint32_t time) {
+static void process_cursor_move(struct spider_compositor *compositor, uint32_t time) {
 	/* Move the grabbed view to the new position. */
-	server->grabbed_view->x = server->cursor->x - server->grab_x;
-	server->grabbed_view->y = server->cursor->y - server->grab_y;
+	compositor->grabbed_view->x = compositor->cursor->x - compositor->grab_x;
+	compositor->grabbed_view->y = compositor->cursor->y - compositor->grab_y;
 }
 
-static void process_cursor_resize(struct spider_server *server, uint32_t time) {
+static void process_cursor_resize(struct spider_compositor *compositor, uint32_t time) {
 	/*
 	 * Resizing the grabbed view can be a little bit complicated, because we
 	 * could be resizing from any corner or edge. This not only resizes the view
@@ -42,29 +42,29 @@ static void process_cursor_resize(struct spider_server *server, uint32_t time) {
 	 * you'd wait for the client to prepare a buffer at the new size, then
 	 * commit any movement that was prepared.
 	 */
-	struct spider_view *view = server->grabbed_view;
-	double dx = server->cursor->x - server->grab_x;
-	double dy = server->cursor->y - server->grab_y;
+	struct spider_view *view = compositor->grabbed_view;
+	double dx = compositor->cursor->x - compositor->grab_x;
+	double dy = compositor->cursor->y - compositor->grab_y;
 	double x = view->x;
 	double y = view->y;
-	int width = server->grab_width;
-	int height = server->grab_height;
-	if (server->resize_edges & WLR_EDGE_TOP) {
-		y = server->grab_y + dy;
+	int width = compositor->grab_width;
+	int height = compositor->grab_height;
+	if (compositor->resize_edges & WLR_EDGE_TOP) {
+		y = compositor->grab_y + dy;
 		height -= dy;
 		if (height < 1) {
 			y += height;
 		}
-	} else if (server->resize_edges & WLR_EDGE_BOTTOM) {
+	} else if (compositor->resize_edges & WLR_EDGE_BOTTOM) {
 		height += dy;
 	}
-	if (server->resize_edges & WLR_EDGE_LEFT) {
-		x = server->grab_x + dx;
+	if (compositor->resize_edges & WLR_EDGE_LEFT) {
+		x = compositor->grab_x + dx;
 		width -= dx;
 		if (width < 1) {
 			x += width;
 		}
-	} else if (server->resize_edges & WLR_EDGE_RIGHT) {
+	} else if (compositor->resize_edges & WLR_EDGE_RIGHT) {
 		width += dx;
 	}
 	view->x = x;
@@ -72,28 +72,28 @@ static void process_cursor_resize(struct spider_server *server, uint32_t time) {
 	wlr_xdg_toplevel_set_size(view->xdg_surface, width, height);
 }
 
-static void process_cursor_motion(struct spider_server *server, uint32_t time) {
+static void process_cursor_motion(struct spider_compositor *compositor, uint32_t time) {
 	/* If the mode is non-passthrough, delegate to those functions. */
-	if (server->cursor_mode == SPIDER_CURSOR_MOVE) {
-		process_cursor_move(server, time);
+	if (compositor->cursor_mode == SPIDER_CURSOR_MOVE) {
+		process_cursor_move(compositor, time);
 		return;
-	} else if (server->cursor_mode == SPIDER_CURSOR_RESIZE) {
-		process_cursor_resize(server, time);
+	} else if (compositor->cursor_mode == SPIDER_CURSOR_RESIZE) {
+		process_cursor_resize(compositor, time);
 		return;
 	}
 
 	/* Otherwise, find the view under the pointer and send the event along. */
 	double sx, sy;
-	struct wlr_seat *seat = server->seat;
+	struct wlr_seat *seat = compositor->seat;
 	struct wlr_surface *surface = NULL;
-	struct spider_view *view = desktop_view_at(server,
-			server->cursor->x, server->cursor->y, &surface, &sx, &sy);
+	struct spider_view *view = desktop_view_at(compositor,
+			compositor->cursor->x, compositor->cursor->y, &surface, &sx, &sy);
 	if (!view) {
 		/* If there's no view under the cursor, set the cursor image to a
 		 * default. This is what makes the cursor image appear when you move it
 		 * around the screen, not over any views. */
 		wlr_xcursor_manager_set_cursor_image(
-				server->cursor_mgr, "left_ptr", server->cursor);
+				compositor->cursor_mgr, "left_ptr", compositor->cursor);
 	}
 	if (surface) {
 		bool focus_changed = seat->pointer_state.focused_surface != surface;
@@ -118,23 +118,23 @@ static void process_cursor_motion(struct spider_server *server, uint32_t time) {
 	}
 }
 
-static void server_cursor_motion(struct wl_listener *listener, void *data) {
+static void compositor_cursor_motion(struct wl_listener *listener, void *data) {
 	/* This event is forwarded by the cursor when a pointer emits a _relative_
 	 * pointer motion event (i.e. a delta) */
-	struct spider_server *server =
-		wl_container_of(listener, server, cursor_motion);
+	struct spider_compositor *compositor =
+		wl_container_of(listener, compositor, cursor_motion);
 	struct wlr_event_pointer_motion *event = data;
 	/* The cursor doesn't move unless we tell it to. The cursor automatically
 	 * handles constraining the motion to the output layout, as well as any
 	 * special configuration applied for the specific input device which
 	 * generated the event. You can pass NULL for the device if you want to move
 	 * the cursor around without any input. */
-	wlr_cursor_move(server->cursor, event->device,
+	wlr_cursor_move(compositor->cursor, event->device,
 			event->delta_x, event->delta_y);
-	process_cursor_motion(server, event->time_msec);
+	process_cursor_motion(compositor, event->time_msec);
 }
 
-static void server_cursor_motion_absolute(
+static void compositor_cursor_motion_absolute(
 		struct wl_listener *listener, void *data) {
 	/* This event is forwarded by the cursor when a pointer emits an _absolute_
 	 * motion event, from 0..1 on each axis. This happens, for example, when
@@ -142,74 +142,74 @@ static void server_cursor_motion_absolute(
 	 * move the mouse over the window. You could enter the window from any edge,
 	 * so we have to warp the mouse there. There is also some hardware which
 	 * emits these events. */
-	struct spider_server *server =
-		wl_container_of(listener, server, cursor_motion_absolute);
+	struct spider_compositor *compositor =
+		wl_container_of(listener, compositor, cursor_motion_absolute);
 	struct wlr_event_pointer_motion_absolute *event = data;
-	wlr_cursor_warp_absolute(server->cursor, event->device, event->x, event->y);
-	process_cursor_motion(server, event->time_msec);
+	wlr_cursor_warp_absolute(compositor->cursor, event->device, event->x, event->y);
+	process_cursor_motion(compositor, event->time_msec);
 }
 
-static void server_cursor_button(struct wl_listener *listener, void *data) {
+static void compositor_cursor_button(struct wl_listener *listener, void *data) {
 	/* This event is forwarded by the cursor when a pointer emits a button
 	 * event. */
-	struct spider_server *server =
-		wl_container_of(listener, server, cursor_button);
+	struct spider_compositor *compositor =
+		wl_container_of(listener, compositor, cursor_button);
 	struct wlr_event_pointer_button *event = data;
 	/* Notify the client with pointer focus that a button press has occurred */
-	wlr_seat_pointer_notify_button(server->seat,
+	wlr_seat_pointer_notify_button(compositor->seat,
 			event->time_msec, event->button, event->state);
 	double sx, sy;
-	struct wlr_seat *seat = server->seat;
+	struct wlr_seat *seat = compositor->seat;
 	struct wlr_surface *surface;
-	struct spider_view *view = desktop_view_at(server,
-			server->cursor->x, server->cursor->y, &surface, &sx, &sy);
+	struct spider_view *view = desktop_view_at(compositor,
+			compositor->cursor->x, compositor->cursor->y, &surface, &sx, &sy);
 	if (event->state == WLR_BUTTON_RELEASED) {
 		/* If you released any buttons, we exit interactive move/resize mode. */
-		server->cursor_mode = SPIDER_CURSOR_PASSTHROUGH;
+		compositor->cursor_mode = SPIDER_CURSOR_PASSTHROUGH;
 	} else {
 		/* Focus that client if the button was _pressed_ */
 		focus_view(view, surface);
 	}
 }
 
-static void server_cursor_axis(struct wl_listener *listener, void *data) {
+static void compositor_cursor_axis(struct wl_listener *listener, void *data) {
 	/* This event is forwarded by the cursor when a pointer emits an axis event,
 	 * for example when you move the scroll wheel. */
-	struct spider_server *server =
-		wl_container_of(listener, server, cursor_axis);
+	struct spider_compositor *compositor =
+		wl_container_of(listener, compositor, cursor_axis);
 	struct wlr_event_pointer_axis *event = data;
 	/* Notify the client with pointer focus of the axis event. */
-	wlr_seat_pointer_notify_axis(server->seat,
+	wlr_seat_pointer_notify_axis(compositor->seat,
 			event->time_msec, event->orientation, event->delta,
 			event->delta_discrete, event->source);
 }
 
-static void server_cursor_frame(struct wl_listener *listener, void *data) {
+static void compositor_cursor_frame(struct wl_listener *listener, void *data) {
 	/* This event is forwarded by the cursor when a pointer emits an frame
 	 * event. Frame events are sent after regular pointer events to group
 	 * multiple events together. For instance, two axis events may happen at the
 	 * same time, in which case a frame event won't be sent in between. */
-	struct spider_server *server =
-		wl_container_of(listener, server, cursor_frame);
+	struct spider_compositor *compositor =
+		wl_container_of(listener, compositor, cursor_frame);
 	/* Notify the client with pointer focus of the frame event. */
-	wlr_seat_pointer_notify_frame(server->seat);
+	wlr_seat_pointer_notify_frame(compositor->seat);
 }
 
-int spider_create_cursor(struct spider_server *server)
+int spider_create_cursor(struct spider_compositor *compositor)
 {
 	/*
 	 * Creates a cursor, which is a wlroots utility for tracking the cursor
 	 * image shown on screen.
 	 */
-	server->cursor = wlr_cursor_create();
-	wlr_cursor_attach_output_layout(server->cursor, server->output_layout);
+	compositor->cursor = wlr_cursor_create();
+	wlr_cursor_attach_output_layout(compositor->cursor, compositor->output_layout);
 
 	/* Creates an xcursor manager, another wlroots utility which loads up
 	 * Xcursor themes to source cursor images from and makes sure that cursor
 	 * images are available at all scale factors on the screen (necessary for
 	 * HiDPI support). We add a cursor theme at scale factor 1 to begin with. */
-	server->cursor_mgr = wlr_xcursor_manager_create(NULL, 24);
-	wlr_xcursor_manager_load(server->cursor_mgr, 1);
+	compositor->cursor_mgr = wlr_xcursor_manager_create(NULL, 24);
+	wlr_xcursor_manager_load(compositor->cursor_mgr, 1);
 
 	/*
 	 * wlr_cursor *only* displays an image on screen. It does not move around
@@ -223,17 +223,17 @@ int spider_create_cursor(struct spider_server *server)
 	 *
 	 * And more comments are sprinkled throughout the notify functions above.
 	 */
-	server->cursor_motion.notify = server_cursor_motion;
-	wl_signal_add(&server->cursor->events.motion, &server->cursor_motion);
-	server->cursor_motion_absolute.notify = server_cursor_motion_absolute;
-	wl_signal_add(&server->cursor->events.motion_absolute,
-			&server->cursor_motion_absolute);
-	server->cursor_button.notify = server_cursor_button;
-	wl_signal_add(&server->cursor->events.button, &server->cursor_button);
-	server->cursor_axis.notify = server_cursor_axis;
-	wl_signal_add(&server->cursor->events.axis, &server->cursor_axis);
-	server->cursor_frame.notify = server_cursor_frame;
-	wl_signal_add(&server->cursor->events.frame, &server->cursor_frame);
+	compositor->cursor_motion.notify = compositor_cursor_motion;
+	wl_signal_add(&compositor->cursor->events.motion, &compositor->cursor_motion);
+	compositor->cursor_motion_absolute.notify = compositor_cursor_motion_absolute;
+	wl_signal_add(&compositor->cursor->events.motion_absolute,
+			&compositor->cursor_motion_absolute);
+	compositor->cursor_button.notify = compositor_cursor_button;
+	wl_signal_add(&compositor->cursor->events.button, &compositor->cursor_button);
+	compositor->cursor_axis.notify = compositor_cursor_axis;
+	wl_signal_add(&compositor->cursor->events.axis, &compositor->cursor_axis);
+	compositor->cursor_frame.notify = compositor_cursor_frame;
+	wl_signal_add(&compositor->cursor->events.frame, &compositor->cursor_frame);
 
 	return 0;
 }
