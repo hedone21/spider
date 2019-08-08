@@ -27,13 +27,13 @@
 #include <string.h>
 #include <assert.h>
 #include <sys/socket.h>
-#include <linux/limits.h>
 #include "client-server/server.h"
 #include "client-server/parser.h"
+#include "client-server/html.h"
+#include "client-server/command.h"
 #include "common/log.h"
 
 #define BUF_MAX 65536
-#define RESP_BUF_MAX 1024 * 1024 * 4 // 4M
 
 static const char* get_http_method(http_parser *parser)
 {
@@ -152,11 +152,6 @@ static int on_url_cb(http_parser *parser, const char *at, size_t length)
 {
 	struct spider_client_info *info;
 	char url[BUF_MAX] = {0, };
-	char html_path[PATH_MAX] = {0, };
-	int html_fd;
-
-	char response[RESP_BUF_MAX] = {0, };
-	int bytes_recvd;
 
 	assert(parser);
 
@@ -170,26 +165,11 @@ static int on_url_cb(http_parser *parser, const char *at, size_t length)
 	strncpy(url, at, length);
 	spider_dbg("%s(%s)\n", url, get_http_method(parser));
 
-	if (strncmp(url, "/", 2) == 0) {
-		strncpy(url, "/index.html", 12);
+	if (strncmp(url, "/", 2) == 0 || strncmp(url, "/index.html", 12) == 0) {
+		html_load_index(info);
+	}else if (strncmp(url, "/command", 9) == 0) {
+		html_load_command(info);
 	}
-
-	strncpy(html_path, info->root_path, PATH_MAX);
-	strncat(html_path, url, PATH_MAX);
-
-	spider_dbg("html_path: %s\n", html_path);
-
-	if ((html_fd = open(html_path, O_RDONLY)) != -1) {	
-		send(info->client_fd, "HTTP/1.0 200 OK\n\n", 17, 0);
-		while((bytes_recvd = read(html_fd, response, RESP_BUF_MAX)) > 0) {
-			// spider_dbg("[response]\n%s\n", response);
-			write(info->client_fd, response, bytes_recvd);
-		}
-	}else {
-		write(info->client_fd, "HTTP/1.0 404 Not Found\n", 23); //FILE NOT FOUND
-	}
-
-	close(html_fd);
 
 	return 0;
 }
@@ -238,6 +218,10 @@ static int on_body_cb(http_parser *parser, const char *at, size_t length)
 	strncpy(body, at, length);
 
 	spider_dbg("%s\n", body);
+
+	if (strncmp(body, "command", 7) == 0) {
+		command_launch(body + 8);
+	}
 
 	return 0;
 }

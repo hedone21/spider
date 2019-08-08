@@ -3,6 +3,8 @@ cli_server_src = [
   'server.c',
   'net.c',
   'parser.c',
+  'html.c',
+  'command.c',
   ]
 
 cli_server_dep = [
