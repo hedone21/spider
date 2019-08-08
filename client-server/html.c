@@ -42,7 +42,7 @@ static void load_html(int client_fd, const char *path, const char *html)
 
 	spider_dbg("html_path: %s\n", html_path);
 
-	if ((html_fd = open(html_path, O_RDONLY)) != -1) {	
+	if ((html_fd = open(html_path, O_RDONLY | O_CLOEXEC)) != -1) {
 		send(client_fd, "HTTP/1.0 200 OK\n\n", 17, 0);
 		while((bytes_recvd = read(html_fd, response, RESP_BUF_MAX)) > 0) {
 			// spider_dbg("[response]\n%s\n", response);
