@@ -28,6 +28,7 @@
 #include <unistd.h>
 #include <gtk/gtk.h>
 #include <webkit2/webkit2.h>
+#include "shell/shell.h"
 #include "common/log.h"
 #include "common/global_vars.h"
 
@@ -44,6 +45,7 @@ static gboolean close_web_cb(WebKitWebView* webView, GtkWidget* window)
 
 int main(int argc, char* argv[])
 {
+	struct spider_shell shell;
 	GtkWidget *win = NULL;
 	WebKitWebView *web = NULL;
 	char *url = NULL;
@@ -52,6 +54,8 @@ int main(int argc, char* argv[])
 	spider_dbg("URL=%s\n", url);
 
 	gtk_init(&argc, &argv);
+
+	shell_init(&shell);
 
 	win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_default_size(GTK_WINDOW(win), 1280, 720);

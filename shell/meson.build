@@ -1,8 +1,10 @@
 shell_src = [
   'main.c',
+  'shell.c',
   ]
 
 shell_dep = [
+  wayland_client_dep,
   gtk_dep,
   webkitgtk_dep,
   ]
