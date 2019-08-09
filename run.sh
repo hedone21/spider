@@ -5,5 +5,5 @@ export SPIDER_CLIENT_SERVER_PATH=client-web
 
 #$PWD/build/server/spider-server -s $PWD/build/client-shell/client -V
 $PWD/build/compositor/spider-compositor \
-	-s $PWD/build/client-shell/client \
+	-s $PWD/build/shell/client \
 	-r $PWD/build/client-server/client-server

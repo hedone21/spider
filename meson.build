@@ -23,5 +23,5 @@ wlr_dep = dependency('wlroots', version: wlroots_version)
 
 subdir('protocol')
 subdir('compositor')
-subdir('client-shell')
+subdir('shell')
 subdir('client-server')
