@@ -5,9 +5,10 @@ protocols_dep = dependency('wayland-protocols', version: '>= 1.17')
 protocols_base_dir = protocols_dep.get_pkgconfig_variable('pkgdatadir')
 
 protocols_xml = [
+  ['xdg-shell', 'v6', protocols_base_dir],
+  ['xdg-shell', 'stable', protocols_base_dir],
   ['spider', 'internal'],
-  ['xdg-shell', 'v6' ],
-  ['xdg-shell', 'stable' ],
+  ['wlr-layer-shell', 'v1', '.'],
   ]
 
 foreach p : protocols_xml
@@ -18,10 +19,10 @@ foreach p : protocols_xml
     protocol_path = '@0@.xml'.format(base_file)
   elif p[1] == 'stable'
     base_file = protocol_name
-    protocol_path = '@0@/stable/@1@/@1@.xml'.format(protocols_base_dir, base_file)
+    protocol_path = '@0@/stable/@1@/@1@.xml'.format(p[2], base_file)
   else
     base_file = '@0@-unstable-@1@'.format(protocol_name, p[1])
-    protocol_path = '@0@/unstable/@1@/@2@.xml'.format(protocols_base_dir, protocol_name, base_file)
+    protocol_path = '@0@/unstable/@1@/@2@.xml'.format(p[2], protocol_name, base_file)
   endif
 
   foreach output_type: [ 'client-header', 'server-header', 'private-code' ]
