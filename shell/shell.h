@@ -26,6 +26,7 @@
 #include <wayland-client.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkwayland.h>
+#include <wlr/types/wlr_layer_shell_v1.h>
 
 struct spider_shell {
 	struct wl_display *display;
@@ -35,6 +36,7 @@ struct spider_shell {
 	struct wl_shm *shm;
 	struct wl_seat *seat;
 	struct wl_output *output;
+	struct wlr_layer_shell *layer_shell;
 };
 
 int shell_init(struct spider_shell *shell);

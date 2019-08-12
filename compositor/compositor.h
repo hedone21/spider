@@ -39,8 +39,8 @@
 #include <wlr/types/wlr_seat.h>
 #include <wlr/types/wlr_xcursor_manager.h>
 #include <wlr/types/wlr_xdg_shell.h>
-/* TODO: Unstable wayland interfaces
 #include <wlr/types/wlr_layer_shell_v1.h>
+/* TODO: Unstable wayland interfaces
 #include <wlr/types/wlr_xdg_output_v6.h>
 */
 #include <wlr/util/log.h>
@@ -102,9 +102,9 @@ struct spider_compositor {
 
 	/* Unstable Interface */
 	struct wlr_layer_shell_v1 *layer_shell;
-	struct wl_listener *layer_shell_surface;
+	struct wl_listener layer_shell_surface;
 	struct wlr_xdg_shell_v6 *xdg_shell_v6;
-	struct wl_listener *wlr_xdg_shell_v6_surface;
+	struct wl_listener wlr_xdg_shell_v6_surface;
 };
 
 struct spider_output {

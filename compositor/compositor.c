@@ -54,7 +54,7 @@ void focus_view(struct spider_view *view, struct wlr_surface *surface) {
 		 * stop displaying a caret.
 		 */
 		struct wlr_xdg_surface *previous = wlr_xdg_surface_from_wlr_surface(
-					seat->keyboard_state.focused_surface);
+				seat->keyboard_state.focused_surface);
 		wlr_xdg_toplevel_set_activated(previous, false);
 	}
 	struct wlr_keyboard *keyboard = wlr_seat_get_keyboard(seat);
@@ -69,7 +69,7 @@ void focus_view(struct spider_view *view, struct wlr_surface *surface) {
 	 * clients without additional work on your part.
 	 */
 	wlr_seat_keyboard_notify_enter(seat, view->xdg_surface->surface,
-		keyboard->keycodes, keyboard->num_keycodes, &keyboard->modifiers);
+			keyboard->keycodes, keyboard->num_keycodes, &keyboard->modifiers);
 }
 
 static void keyboard_handle_modifiers(
@@ -87,7 +87,7 @@ static void keyboard_handle_modifiers(
 	wlr_seat_set_keyboard(keyboard->compositor->seat, keyboard->device);
 	/* Send modifiers to the client. */
 	wlr_seat_keyboard_notify_modifiers(keyboard->compositor->seat,
-		&keyboard->device->keyboard->modifiers);
+			&keyboard->device->keyboard->modifiers);
 }
 
 static bool handle_keybinding(struct spider_compositor *compositor, xkb_keysym_t sym) {
@@ -99,27 +99,27 @@ static bool handle_keybinding(struct spider_compositor *compositor, xkb_keysym_t
 	 * This function assumes Alt is held down.
 	 */
 	switch (sym) {
-	case XKB_KEY_Escape:
-		wl_display_terminate(compositor->wl_display);
-		kill(compositor->client_server_pid, SIGKILL);
-		kill(compositor->client_shell_pid, SIGKILL);
-		break;
-	case XKB_KEY_F1:
-		/* Cycle to the next view */
-		if (wl_list_length(&compositor->views) < 2) {
+		case XKB_KEY_Escape:
+			wl_display_terminate(compositor->wl_display);
+			kill(compositor->client_server_pid, SIGKILL);
+			kill(compositor->client_shell_pid, SIGKILL);
 			break;
-		}
-		struct spider_view *current_view = wl_container_of(
-			compositor->views.next, current_view, link);
-		struct spider_view *next_view = wl_container_of(
-			current_view->link.next, next_view, link);
-		focus_view(next_view, next_view->xdg_surface->surface);
-		/* Move the previous view to the end of the list */
-		wl_list_remove(&current_view->link);
-		wl_list_insert(compositor->views.prev, &current_view->link);
-		break;
-	default:
-		return false;
+		case XKB_KEY_F1:
+			/* Cycle to the next view */
+			if (wl_list_length(&compositor->views) < 2) {
+				break;
+			}
+			struct spider_view *current_view = wl_container_of(
+					compositor->views.next, current_view, link);
+			struct spider_view *next_view = wl_container_of(
+					current_view->link.next, next_view, link);
+			focus_view(next_view, next_view->xdg_surface->surface);
+			/* Move the previous view to the end of the list */
+			wl_list_remove(&current_view->link);
+			wl_list_insert(compositor->views.prev, &current_view->link);
+			break;
+		default:
+			return false;
 	}
 	return true;
 }
@@ -154,7 +154,7 @@ static void keyboard_handle_key(
 		/* Otherwise, we pass it along to the client. */
 		wlr_seat_set_keyboard(seat, keyboard->device);
 		wlr_seat_keyboard_notify_key(seat, event->time_msec,
-			event->keycode, event->state);
+				event->keycode, event->state);
 	}
 }
 
@@ -170,7 +170,7 @@ static void compositor_new_keyboard(struct spider_compositor *compositor,
 	struct xkb_rule_names rules = { 0 };
 	struct xkb_context *context = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
 	struct xkb_keymap *keymap = xkb_map_new_from_names(context, &rules,
-		XKB_KEYMAP_COMPILE_NO_FLAGS);
+			XKB_KEYMAP_COMPILE_NO_FLAGS);
 
 	wlr_keyboard_set_keymap(device->keyboard, keymap);
 	xkb_keymap_unref(keymap);
@@ -205,14 +205,14 @@ static void compositor_new_input(struct wl_listener *listener, void *data) {
 		wl_container_of(listener, compositor, new_input);
 	struct wlr_input_device *device = data;
 	switch (device->type) {
-	case WLR_INPUT_DEVICE_KEYBOARD:
-		compositor_new_keyboard(compositor, device);
-		break;
-	case WLR_INPUT_DEVICE_POINTER:
-		compositor_new_pointer(compositor, device);
-		break;
-	default:
-		break;
+		case WLR_INPUT_DEVICE_KEYBOARD:
+			compositor_new_keyboard(compositor, device);
+			break;
+		case WLR_INPUT_DEVICE_POINTER:
+			compositor_new_pointer(compositor, device);
+			break;
+		default:
+			break;
 	}
 	/* We need to let the wlr_seat know what our capabilities are, which is
 	 * communiciated to the client. In TinyWL we always have a cursor, even if
@@ -346,7 +346,7 @@ static void render_surface(struct wlr_surface *surface,
 	enum wl_output_transform transform =
 		wlr_output_transform_invert(surface->current.transform);
 	wlr_matrix_project_box(matrix, &box, transform, 0,
-		output->transform_matrix);
+			output->transform_matrix);
 
 	/* This takes our matrix, the texture, and an alpha, and performs the actual
 	 * rendering on the GPU. */
@@ -544,7 +544,7 @@ static void xdg_toplevel_request_fullscreen(
 	wlr_xdg_toplevel_set_fullscreen(view->xdg_surface, true);
 }
 
-static void compositor_new_xdg_surface(struct wl_listener *listener, void *data) {
+static void new_xdg_surface(struct wl_listener *listener, void *data) {
 	/* This event is raised when wlr_xdg_shell receives a new xdg surface from a
 	 * client, either a toplevel (application window) or popup. */
 	struct spider_compositor *compositor =
@@ -583,6 +583,20 @@ static void compositor_new_xdg_surface(struct wl_listener *listener, void *data)
 
 	/* Add it to the list of views. */
 	wl_list_insert(&compositor->views, &view->link);
+}
+
+static void handle_layer_shell_surface(struct wl_listener *listener, void *data)
+{
+	struct wlr_layer_surface_v1 *layer_surface = data;
+	spider_dbg("new layer surface: namespace %s layer %d anchor %d "
+			"size %dx%d margin %d,%d,%d,%d",
+			layer_surface->namespace, layer_surface->layer, layer_surface->layer,
+			layer_surface->client_pending.desired_width,
+			layer_surface->client_pending.desired_height,
+			layer_surface->client_pending.margin.top,
+			layer_surface->client_pending.margin.right,
+			layer_surface->client_pending.margin.bottom,
+			layer_surface->client_pending.margin.left);
 }
 
 int spider_preinit_compositor(struct spider_compositor *compositor)
@@ -650,8 +664,14 @@ int spider_init_compositor(struct spider_compositor *compositor)
 	 * https://drewdevault.com/2018/07/29/Wayland-shells.html
 	 */
 	wl_list_init(&compositor->views);
+
+	compositor->layer_shell = wlr_layer_shell_v1_create(compositor->wl_display);
+	wl_signal_add(&compositor->layer_shell->events.new_surface,
+			&compositor->layer_shell_surface);
+	compositor->layer_shell_surface.notify = handle_layer_shell_surface;
+
 	compositor->xdg_shell = wlr_xdg_shell_create(compositor->wl_display);
-	compositor->new_xdg_surface.notify = compositor_new_xdg_surface;
+	compositor->new_xdg_surface.notify = new_xdg_surface;
 	wl_signal_add(&compositor->xdg_shell->events.new_surface,
 			&compositor->new_xdg_surface);
 

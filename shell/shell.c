@@ -22,6 +22,7 @@
 
 #include "shell/shell.h"
 #include "common/log.h"
+#include "protocol/wlr-layer-shell-unstable-v1-client-protocol.h"
 
 static void registry_handle_global(void *data, struct wl_registry *registry, 
 		uint32_t id, const char *interface, uint32_t version)
@@ -38,6 +39,9 @@ static void registry_handle_global(void *data, struct wl_registry *registry,
 		shell->seat = wl_registry_bind(registry, id, &wl_seat_interface, 5);
 	} else if (strcmp(interface, "wl_shm") == 0) {
 		shell->shm = wl_registry_bind(registry, id, &wl_shm_interface, 1);
+	} else if (strcmp(interface, zwlr_layer_shell_v1_interface.name) == 0) {
+		shell->layer_shell = wl_registry_bind(
+				registry, id, &zwlr_layer_shell_v1_interface, 1);
 	}
 }
 
