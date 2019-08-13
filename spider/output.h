@@ -34,7 +34,13 @@ struct spider_output {
 	struct wl_list link;
 	struct spider_desktop *desktop;
 	struct wlr_output *wlr_output;
+
 	struct wl_listener frame;
+	struct wl_listener destroy;
+	struct wl_listener enable;
+	struct wl_listener mode;
+	struct wl_listener transform;
+	struct wl_listener present;
 };
 
 void handle_new_output(struct wl_listener *listener, void *data);

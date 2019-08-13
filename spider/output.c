@@ -20,6 +20,7 @@
  * SOFTWARE.
  */
 
+#include <wlr/types/wlr_presentation_time.h>
 #include "spider/desktop.h"
 #include "spider/output.h"
 #include "common/log.h"
@@ -48,8 +49,10 @@ static void render_surface(struct wlr_surface *surface,	int sx, int sy, void *da
 		.height = surface->current.height * output->scale,
 	};
 
+	/*
 	spider_dbg("box x=%d y=%d width=%d height=%d\n", 
 			box.x, box.y, box.width, box.height);
+	*/
 
 	float matrix[9];
 	enum wl_output_transform transform =
@@ -66,12 +69,14 @@ static void render_surface(struct wlr_surface *surface,	int sx, int sy, void *da
  * generally at the output's refresh rate (e.g. 60Hz). */
 static void output_handle_frame(struct wl_listener *listener, void *data)
 {
-	struct spider_output *output =
-		wl_container_of(listener, output, frame);
+	struct spider_output *output = wl_container_of(listener, output, frame);
 	struct wlr_renderer *renderer = output->desktop->renderer;
 
 	struct timespec now;
 	clock_gettime(CLOCK_MONOTONIC, &now);
+
+	/* This func may print too much logs */
+	// spider_dbg("Frame %s\n", output->wlr_output->name);
 
 	if (!wlr_output_attach_render(output->wlr_output, NULL)) {
 		return;
@@ -84,11 +89,6 @@ static void output_handle_frame(struct wl_listener *listener, void *data)
 	float color[4] = {0.0, 0.0, 0.0, 1.0};
 	wlr_renderer_clear(renderer, color);
 
-	/* This func may print too much logs */
-	/*
-	spider_dbg("w=%d h=%d r=%f g=%f b=%f a=%f\n", width, height,
-			color[0], color[1], color[2], color[3]);
-	*/
 
 	struct spider_view *view;
 	wl_list_for_each_reverse(view, &output->desktop->views, link) {
@@ -111,6 +111,53 @@ static void output_handle_frame(struct wl_listener *listener, void *data)
 	wlr_output_commit(output->wlr_output);
 }
 
+static void output_handle_destroy(struct wl_listener *listener, void *data)
+{
+	struct spider_output *output = wl_container_of(listener, output, destroy);
+	spider_dbg("Terminate %s\n", output->wlr_output->name);
+}
+
+static void output_handle_enable(struct wl_listener *listener, void *data)
+{
+	struct spider_output *output = wl_container_of(listener, output, destroy);
+	spider_dbg("Enable %s\n", output->wlr_output->name);
+}
+
+static void output_handle_mode(struct wl_listener *listener, void *data)
+{
+	struct spider_output *output = wl_container_of(listener, output, destroy);
+	spider_dbg("Mode %s\n", output->wlr_output->name);
+}
+
+static void output_handle_transform(struct wl_listener *listener, void *data)
+{
+	struct spider_output *output = wl_container_of(listener, output, destroy);
+	spider_dbg("Transform %s\n", output->wlr_output->name);
+}
+
+static void output_handle_present(struct wl_listener *listener, void *data) 
+{
+	struct spider_output *output = wl_container_of(listener, output, destroy);
+
+	struct wlr_output_event_present *output_event = data;
+
+	struct wlr_presentation_event event = {
+		.output = output->wlr_output,
+		.tv_sec = (uint64_t)output_event->when->tv_sec,
+		.tv_nsec = (uint32_t)output_event->when->tv_nsec,
+		.refresh = (uint32_t)output_event->refresh,
+		.seq = (uint64_t)output_event->seq,
+		.flags = output_event->flags,
+	};
+
+	/* This func may print too much logs */
+	/*
+	spider_dbg("Present %s sec=%lu nsec=%u refresh=%u seq=%lu flags=%u\n",
+			output->wlr_output->name, event.tv_sec, event.tv_nsec,
+			event.refresh, event.seq, event.flags);
+	*/
+}
+
 /* This event is rasied by the backend when a new output (aka a display or
  * monitor) becomes available. */
 void handle_new_output(struct wl_listener *listener, void *data)
@@ -131,11 +178,32 @@ void handle_new_output(struct wl_listener *listener, void *data)
 	}
 
 	struct spider_output *output = calloc(1, sizeof(struct spider_output));
+
 	output->wlr_output = wlr_output;
 	output->desktop = desktop;
+	wlr_output->data = output;
+	wl_list_insert(&desktop->outputs, &output->link);
+
 	output->frame.notify = output_handle_frame;
 	wl_signal_add(&wlr_output->events.frame, &output->frame);
-	wl_list_insert(&desktop->outputs, &output->link);
+	output->destroy.notify = output_handle_destroy;
+	wl_signal_add(&wlr_output->events.destroy, &output->destroy);
+	output->enable.notify = output_handle_enable;
+	wl_signal_add(&wlr_output->events.enable, &output->enable);
+	output->mode.notify = output_handle_mode;
+	wl_signal_add(&wlr_output->events.mode, &output->mode);
+	output->transform.notify = output_handle_transform;
+	wl_signal_add(&wlr_output->events.transform, &output->transform);
+	output->present.notify = output_handle_present;
+	wl_signal_add(&wlr_output->events.present, &output->present);
+
+	/* TODO handle damage region to reduce overhead */
+	/*
+	output->damage_frame.notify = output_damage_handle_frame;
+	wl_signal_add(&output->damage->events.frame, &output->damage_frame);
+	output->damage_destroy.notify = output_damage_handle_destroy;
+	wl_signal_add(&output->damage->events.destroy, &output->damage_destroy);
+	*/
 
 	wlr_output_layout_add_auto(desktop->output_layout, wlr_output);
 
