@@ -287,173 +287,6 @@ struct spider_view *desktop_view_at(
 	return NULL;
 }
 
-/* Used to move all of the data necessary to render a surface from the top-level
- * frame handler to the per-surface render function. */
-struct render_data {
-	struct wlr_output *output;
-	struct wlr_renderer *renderer;
-	struct spider_view *view;
-	struct timespec *when;
-};
-
-static void render_surface(struct wlr_surface *surface,
-		int sx, int sy, void *data) {
-	/* This function is called for every surface that needs to be rendered. */
-	struct render_data *rdata = data;
-	struct spider_view *view = rdata->view;
-	struct wlr_output *output = rdata->output;
-
-	/* We first obtain a wlr_texture, which is a GPU resource. wlroots
-	 * automatically handles negotiating these with the client. The underlying
-	 * resource could be an opaque handle passed from the client, or the client
-	 * could have sent a pixel buffer which we copied to the GPU, or a few other
-	 * means. You don't have to worry about this, wlroots takes care of it. */
-	struct wlr_texture *texture = wlr_surface_get_texture(surface);
-	if (texture == NULL) {
-		return;
-	}
-
-	/* The view has a position in layout coordinates. If you have two displays,
-	 * one next to the other, both 1080p, a view on the rightmost display might
-	 * have layout coordinates of 2000,100. We need to translate that to
-	 * output-local coordinates, or (2000 - 1920). */
-	double ox = 0, oy = 0;
-	wlr_output_layout_output_coords(
-			view->desktop->output_layout, output, &ox, &oy);
-	ox += view->x + sx, oy += view->y + sy;
-
-	/* We also have to apply the scale factor for HiDPI outputs. This is only
-	 * part of the puzzle, TinyWL does not fully support HiDPI. */
-	struct wlr_box box = {
-		.x = ox * output->scale,
-		.y = oy * output->scale,
-		.width = surface->current.width * output->scale,
-		.height = surface->current.height * output->scale,
-	};
-
-	/*
-	 * Those familiar with OpenGL are also familiar with the role of matricies
-	 * in graphics programming. We need to prepare a matrix to render the view
-	 * with. wlr_matrix_project_box is a helper which takes a box with a desired
-	 * x, y coordinates, width and height, and an output geometry, then
-	 * prepares an orthographic projection and multiplies the necessary
-	 * transforms to produce a model-view-projection matrix.
-	 *
-	 * Naturally you can do this any way you like, for example to make a 3D
-	 * desktop.
-	 */
-	float matrix[9];
-	enum wl_output_transform transform =
-		wlr_output_transform_invert(surface->current.transform);
-	wlr_matrix_project_box(matrix, &box, transform, 0,
-			output->transform_matrix);
-
-	/* This takes our matrix, the texture, and an alpha, and performs the actual
-	 * rendering on the GPU. */
-	wlr_render_texture_with_matrix(rdata->renderer, texture, matrix, 1);
-
-	/* This lets the client know that we've displayed that frame and it can
-	 * prepare another one now if it likes. */
-	wlr_surface_send_frame_done(surface, rdata->when);
-}
-
-static void output_frame(struct wl_listener *listener, void *data) {
-	/* This function is called every time an output is ready to display a frame,
-	 * generally at the output's refresh rate (e.g. 60Hz). */
-	struct spider_output *output =
-		wl_container_of(listener, output, frame);
-	struct wlr_renderer *renderer = output->desktop->renderer;
-
-	struct timespec now;
-	clock_gettime(CLOCK_MONOTONIC, &now);
-
-	/* wlr_output_attach_render makes the OpenGL context current. */
-	if (!wlr_output_attach_render(output->wlr_output, NULL)) {
-		return;
-	}
-	/* The "effective" resolution can change if you rotate your outputs. */
-	int width, height;
-	wlr_output_effective_resolution(output->wlr_output, &width, &height);
-	/* Begin the renderer (calls glViewport and some other GL sanity checks) */
-	wlr_renderer_begin(renderer, width, height);
-
-	float color[4] = {0.3, 0.3, 0.3, 1.0};
-	wlr_renderer_clear(renderer, color);
-
-	/* Each subsequent window we render is rendered on top of the last. Because
-	 * our view list is ordered front-to-back, we iterate over it backwards. */
-	struct spider_view *view;
-	wl_list_for_each_reverse(view, &output->desktop->views, link) {
-		if (!view->mapped) {
-			/* An unmapped view should not be rendered. */
-			continue;
-		}
-		struct render_data rdata = {
-			.output = output->wlr_output,
-			.view = view,
-			.renderer = renderer,
-			.when = &now,
-		};
-		/* This calls our render_surface function for each surface among the
-		 * xdg_surface's toplevel and popups. */
-		wlr_xdg_surface_for_each_surface(view->xdg_surface,
-				render_surface, &rdata);
-	}
-
-	/* Hardware cursors are rendered by the GPU on a separate plane, and can be
-	 * moved around without re-rendering what's beneath them - which is more
-	 * efficient. However, not all hardware supports hardware cursors. For this
-	 * reason, wlroots provides a software fallback, which we ask it to render
-	 * here. wlr_cursor handles configuring hardware vs software cursors for you,
-	 * and this function is a no-op when hardware cursors are in use. */
-	wlr_output_render_software_cursors(output->wlr_output, NULL);
-
-	/* Conclude rendering and swap the buffers, showing the final frame
-	 * on-screen. */
-	wlr_renderer_end(renderer);
-	wlr_output_commit(output->wlr_output);
-}
-
-static void desktop_new_output(struct wl_listener *listener, void *data) {
-	/* This event is rasied by the backend when a new output (aka a display or
-	 * monitor) becomes available. */
-	struct spider_desktop *desktop =
-		wl_container_of(listener, desktop, new_output);
-	struct wlr_output *wlr_output = data;
-
-	/* Some backends don't have modes. DRM+KMS does, and we need to set a mode
-	 * before we can use the output. The mode is a tuple of (width, height,
-	 * refresh rate), and each monitor supports only a specific set of modes. We
-	 * just pick the first, a more sophisticated desktop would let the user
-	 * configure it or pick the mode the display advertises as preferred. */
-	if (!wl_list_empty(&wlr_output->modes)) {
-		struct wlr_output_mode *mode =
-			wl_container_of(wlr_output->modes.prev, mode, link);
-		wlr_output_set_mode(wlr_output, mode);
-	}
-
-	/* Allocates and configures our state for this output */
-	struct spider_output *output =
-		calloc(1, sizeof(struct spider_output));
-	output->wlr_output = wlr_output;
-	output->desktop = desktop;
-	/* Sets up a listener for the frame notify event. */
-	output->frame.notify = output_frame;
-	wl_signal_add(&wlr_output->events.frame, &output->frame);
-	wl_list_insert(&desktop->outputs, &output->link);
-
-	/* Adds this to the output layout. The add_auto function arranges outputs
-	 * from left-to-right in the order they appear. A more sophisticated
-	 * desktop would let the user configure the arrangement of outputs in the
-	 * layout. */
-	wlr_output_layout_add_auto(desktop->output_layout, wlr_output);
-
-	/* Creating the global adds a wl_output global to the display, which Wayland
-	 * clients can see to find out information about the output (such as
-	 * DPI, scale factor, manufacturer, etc). */
-	wlr_output_create_global(wlr_output);
-}
-
 static void xdg_surface_map(struct wl_listener *listener, void *data) {
 	/* Called when the surface is mapped, or ready to display on-screen. */
 	struct spider_view *view = wl_container_of(listener, view, map);
@@ -634,55 +467,45 @@ int spider_init_desktop(struct spider_desktop *desktop)
 		wlr_log_init(WLR_ERROR, NULL);
 	}
 
-	/* If we don't provide a renderer, autocreate makes a GLES2 renderer for us.
-	 * The renderer is responsible for defining the various pixel formats it
-	 * supports for shared memory, this configures that for clients. */
 	desktop->renderer = wlr_backend_get_renderer(desktop->backend);
 	wlr_renderer_init_wl_display(desktop->renderer, desktop->wl_display);
 
-	/* This creates some hands-off wlroots interfaces. The desktop is
-	 * necessary for clients to allocate surfaces and the data device manager
-	 * handles the clipboard. Each of these wlroots interfaces has room for you
-	 * to dig your fingers in and play with their behavior if you want. */
-	wlr_compositor_create(desktop->wl_display, desktop->renderer);
+	desktop->compositor = wlr_compositor_create(desktop->wl_display, desktop->renderer);
 	wlr_data_device_manager_create(desktop->wl_display);
 
-	/* Creates an output layout, which a wlroots utility for working with an
-	 * arrangement of screens in a physical layout. */
 	desktop->output_layout = wlr_output_layout_create();
+	/*
+	wlr_xdg_output_manager_v1_create(server->wl_display, desktop->layout);
+	desktop->layout_change.notify = handle_layout_change;
+	wl_signal_add(&desktop->layout->events.change, &desktop->layout_change);
+	*/
 
-	/* Configure a listener to be notified when new outputs are available on the
-	 * backend. */
 	wl_list_init(&desktop->outputs);
-	desktop->new_output.notify = desktop_new_output;
+	desktop->new_output.notify = handle_new_output;
 	wl_signal_add(&desktop->backend->events.new_output, &desktop->new_output);
 
-	/* Set up our list of views and the xdg-shell. The xdg-shell is a Wayland
-	 * protocol which is used for application windows. For more detail on
-	 * shells, refer to my article:
-	 *
-	 * https://drewdevault.com/2018/07/29/Wayland-shells.html
-	 */
 	wl_list_init(&desktop->views);
 
-	desktop->layer_shell = wlr_layer_shell_v1_create(desktop->wl_display);
-	wl_signal_add(&desktop->layer_shell->events.new_surface,
-			&desktop->layer_shell_surface);
-	desktop->layer_shell_surface.notify = handle_layer_shell_surface;
+	/*
+	desktop->xdg_shell_v6_surface.notify = handle_xdg_shell_v6_surface;
+	desktop->xdg_shell_v6 = wlr_xdg_shell_v6_create(server->wl_display);
+	wl_signal_add(&desktop->xdg_shell_v6->events.new_surface,
+		&desktop->xdg_shell_v6_surface);
+	*/
 
 	desktop->xdg_shell = wlr_xdg_shell_create(desktop->wl_display);
 	desktop->new_xdg_surface.notify = new_xdg_surface;
 	wl_signal_add(&desktop->xdg_shell->events.new_surface,
 			&desktop->new_xdg_surface);
 
+	desktop->layer_shell = wlr_layer_shell_v1_create(desktop->wl_display);
+	desktop->layer_shell_surface.notify = handle_layer_shell_surface;
+	wl_signal_add(&desktop->layer_shell->events.new_surface,
+			&desktop->layer_shell_surface);
+
 	spider_create_cursor(desktop);
 
-	/*
-	 * Configures a seat, which is a single "seat" at which a user sits and
-	 * operates the computer. This conceptually includes up to one keyboard,
-	 * pointer, touch, and drawing tablet device. We also rig up a listener to
-	 * let us know when new input devices are available on the backend.
-	 */
+
 	wl_list_init(&desktop->keyboards);
 	desktop->new_input.notify = desktop_new_input;
 	wl_signal_add(&desktop->backend->events.new_input, &desktop->new_input);
@@ -690,6 +513,7 @@ int spider_init_desktop(struct spider_desktop *desktop)
 	desktop->request_cursor.notify = seat_request_cursor;
 	wl_signal_add(&desktop->seat->events.request_set_cursor,
 			&desktop->request_cursor);
+
 
 	/* Add a Unix socket to the Wayland display. */
 	const char *socket = wl_display_add_socket_auto(desktop->wl_display);

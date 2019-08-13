@@ -1,6 +1,7 @@
 compositor_src = [
   'main.c',
   'desktop.c',
+  'output.c',
   'cursor.c',
   ]
 

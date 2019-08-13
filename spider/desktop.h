@@ -47,6 +47,7 @@
 #include <wlr/backend.h>
 #include <xkbcommon/xkbcommon.h>
 #include <stdbool.h>
+#include "spider/output.h"
 
 struct spider_options {
 	char *shell;
@@ -56,6 +57,15 @@ struct spider_options {
 };
 
 extern struct spider_options g_options;
+
+/* Used to move all of the data necessary to render a surface from the top-level
+ * frame handler to the per-surface render function. */
+struct render_data {
+	struct wlr_output *output;
+	struct wlr_renderer *renderer;
+	struct spider_view *view;
+	struct timespec *when;
+};
 
 /* For brevity's sake, struct members are annotated where they are used. */
 enum spider_cursor_mode {
@@ -67,6 +77,7 @@ enum spider_cursor_mode {
 struct spider_desktop {
 	struct wl_display *wl_display;
 	struct wl_event_loop *wl_event_loop;
+	struct wlr_compositor *compositor;
 	struct wlr_backend *backend;
 	struct wlr_backend *noop_backend;
 	struct wlr_renderer *renderer;
@@ -105,13 +116,6 @@ struct spider_desktop {
 	struct wl_listener layer_shell_surface;
 	struct wlr_xdg_shell_v6 *xdg_shell_v6;
 	struct wl_listener wlr_xdg_shell_v6_surface;
-};
-
-struct spider_output {
-	struct wl_list link;
-	struct spider_desktop *desktop;
-	struct wlr_output *wlr_output;
-	struct wl_listener frame;
 };
 
 struct spider_view {
