@@ -31,20 +31,20 @@
 
 #define spider_log(fmt, ...) 						\
 	do {								\
-		fprintf(stderr, "[%s:%d] " fmt, __func__, __LINE__, 	\
-			## __VA_ARGS__);				\
+		fprintf(stderr, "[%s][%s:%d] " fmt, __FILE__, 		\
+			__func__, __LINE__, ## __VA_ARGS__);		\
 	}while(0)
 
 #define spider_dbg(fmt, ...) 						\
 	do {								\
-		fprintf(stderr, "[%s:%d] " fmt, __func__, __LINE__, 	\
-			## __VA_ARGS__);				\
+		fprintf(stderr, "[%s][%s:%d] " fmt, __FILE__, 		\
+			__func__, __LINE__, ## __VA_ARGS__);		\
 	}while(0)
 
 #define spider_err(fmt, ...) 						\
 	do {								\
-		fprintf(stderr, "[%s:%d] " fmt, __func__, __LINE__, 	\
-			## __VA_ARGS__);				\
+		fprintf(stderr, "[%s][%s:%d] " fmt, __FILE__, 		\
+			__func__, __LINE__, ## __VA_ARGS__);		\
 	}while(0)
 
 #endif /* __LOG_H__ */
