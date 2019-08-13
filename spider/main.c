@@ -25,7 +25,7 @@
 #include <string.h>
 #include <getopt.h>
 #include <linux/limits.h>
-#include "compositor/compositor.h"
+#include "spider/desktop.h"
 
 struct spider_options g_options = {
 	.shell = NULL,
@@ -38,7 +38,7 @@ void help()
 
 int main(int argc, char *argv[]) 
 {
-	struct spider_compositor *compositor;
+	struct spider_desktop *desktop;
 
 	static struct option long_options[] = {
 		{"help", no_argument, NULL, 'h'},
@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 
-	compositor = calloc(1, sizeof(*compositor));
-	spider_preinit_compositor(compositor);
-	spider_init_compositor(compositor);
+	desktop = calloc(1, sizeof(*desktop));
+	spider_preinit_desktop(desktop);
+	spider_init_desktop(desktop);
 }

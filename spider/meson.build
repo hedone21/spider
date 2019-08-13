@@ -1,6 +1,6 @@
 compositor_src = [
   'main.c',
-  'compositor.c',
+  'desktop.c',
   'cursor.c',
   ]
 
@@ -12,7 +12,7 @@ compositor_dep = [
   ]
 
 compositor_exe = executable(
-  'spider-compositor',
+  'spider',
   compositor_src,
   spider_protocol_c,
   spider_protocol_h,
@@ -20,6 +20,8 @@ compositor_exe = executable(
   xdg_shell_protocol_h,
   xdg_shell_unstable_v6_protocol_c,
   xdg_shell_unstable_v6_protocol_h,
+  wlr_layer_shell_unstable_v1_protocol_c,
+  wlr_layer_shell_unstable_v1_protocol_h,
   dependencies: compositor_dep,
   include_directories: include_directories('..'),
   name_prefix: '',

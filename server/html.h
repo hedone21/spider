@@ -20,18 +20,13 @@
  * SOFTWARE.
  */
 
-#include "client-server/server.h"
-#include "common/global_vars.h"
-#include "common/log.h"
+#ifndef __SPIDER_SERVER_HTML_H__
+#define __SPIDER_SERVER_HTML_H__
 
-int main(int argc, char *argv[])
-{
-	char *path;
-	path = getenv(SPIDER_CLIENT_SERVER_PATH);	
-	if (path == NULL) {
-		spider_err("Client server path is not set\n");
-		return -1;
-	}
+#include "server/server.h"
+#include "server/parser.h"
 
-	start_server(path);
-}
+void html_load_index(struct spider_client_info *info);
+void html_load_command(struct spider_client_info *info);
+
+#endif

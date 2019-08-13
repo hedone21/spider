@@ -1,6 +1,4 @@
 /*
- * Copyright (c) 2014 Jari Vetoniemi
- * Copyright (c) 2017, 2018 Drew DeVault
  * Copyright (c) 2019 Minyoung.Go <hedone21@gmail.com>
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -22,11 +20,12 @@
  * SOFTWARE.
  */
 
-#ifndef __SPIDER_SERVER_CURSOR_H__
-#define __SPIDER_SERVER_CURSOR_H__
+#ifndef __SPIDER_CLIENT_SERVER_PARSER_H__
+#define __SPIDER_CLIENT_SERVER_PARSER_H__
 
-#include "compositor/compositor.h"
+#include "server/http-parser/http_parser.h"
 
-int spider_create_cursor(struct spider_compositor *compositor);
+void parser_init(http_parser *parser, enum http_parser_type type);
+void parser_settings_init(http_parser_settings *parser_settings);
 
 #endif

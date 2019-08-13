@@ -38,10 +38,10 @@
 #include <sys/file.h>
 #include <fcntl.h>
 #include <linux/limits.h>
-#include "client-server/server.h"
-#include "client-server/net.h"
-#include "client-server/parser.h"
-#include "client-server/http-parser/http_parser.h"
+#include "server/server.h"
+#include "server/net.h"
+#include "server/parser.h"
+#include "server/http-parser/http_parser.h"
 #include "common/log.h"
 
 #define PORT "2580"

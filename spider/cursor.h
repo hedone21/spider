@@ -1,4 +1,6 @@
 /*
+ * Copyright (c) 2014 Jari Vetoniemi
+ * Copyright (c) 2017, 2018 Drew DeVault
  * Copyright (c) 2019 Minyoung.Go <hedone21@gmail.com>
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -20,13 +22,11 @@
  * SOFTWARE.
  */
 
-#ifndef __SPIDER_SERVER_HTML_H__
-#define __SPIDER_SERVER_HTML_H__
+#ifndef __SPIDER_CURSOR_H__
+#define __SPIDER_CURSOR_H__
 
-#include "client-server/server.h"
-#include "client-server/parser.h"
+#include "spider/desktop.h"
 
-void html_load_index(struct spider_client_info *info);
-void html_load_command(struct spider_client_info *info);
+int spider_create_cursor(struct spider_desktop *desktop);
 
 #endif

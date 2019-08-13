@@ -27,10 +27,10 @@
 #include <string.h>
 #include <assert.h>
 #include <sys/socket.h>
-#include "client-server/server.h"
-#include "client-server/parser.h"
-#include "client-server/html.h"
-#include "client-server/command.h"
+#include "server/server.h"
+#include "server/parser.h"
+#include "server/html.h"
+#include "server/command.h"
 #include "common/log.h"
 
 #define BUF_MAX 65536

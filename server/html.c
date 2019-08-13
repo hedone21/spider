@@ -20,12 +20,47 @@
  * SOFTWARE.
  */
 
-#ifndef __SPIDER_CLIENT_SERVER_PARSER_H__
-#define __SPIDER_CLIENT_SERVER_PARSER_H__
+#include <fcntl.h>
+#include <unistd.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <linux/limits.h>
+#include "server/html.h"
+#include "common/log.h"
 
-#include "client-server/http-parser/http_parser.h"
+#define RESP_BUF_MAX 1024 * 1024 * 4 // 4M
 
-void parser_init(http_parser *parser, enum http_parser_type type);
-void parser_settings_init(http_parser_settings *parser_settings);
+static void load_html(int client_fd, const char *path, const char *html)
+{
+	char html_path[PATH_MAX] = {0, };
+	int html_fd;
+	char response[RESP_BUF_MAX] = {0, };
+	int bytes_recvd;
 
-#endif
+	strncpy(html_path, path, PATH_MAX);
+	strncat(html_path, html, PATH_MAX);
+
+	spider_dbg("html_path: %s\n", html_path);
+
+	if ((html_fd = open(html_path, O_RDONLY | O_CLOEXEC)) != -1) {
+		send(client_fd, "HTTP/1.0 200 OK\n\n", 17, 0);
+		while((bytes_recvd = read(html_fd, response, RESP_BUF_MAX)) > 0) {
+			// spider_dbg("[response]\n%s\n", response);
+			write(client_fd, response, bytes_recvd);
+		}
+	}else {
+		write(client_fd, "HTTP/1.0 404 Not Found\n", 23); //FILE NOT FOUND
+	}
+
+	close(html_fd);
+}
+
+void html_load_index(struct spider_client_info *info)
+{
+	load_html(info->client_fd, info->root_path, "/index.html");
+}
+
+void html_load_command(struct spider_client_info *info)
+{
+	load_html(info->client_fd, info->root_path, "/index.html");
+}

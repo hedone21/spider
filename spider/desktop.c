@@ -30,8 +30,8 @@
 #include <signal.h>
 #include <time.h>
 #include <unistd.h>
-#include "compositor/compositor.h"
-#include "compositor/cursor.h"
+#include "spider/desktop.h"
+#include "spider/cursor.h"
 #include "common/log.h"
 #include "common/global_vars.h"
 
@@ -40,8 +40,8 @@ void focus_view(struct spider_view *view, struct wlr_surface *surface) {
 	if (view == NULL) {
 		return;
 	}
-	struct spider_compositor *compositor = view->compositor;
-	struct wlr_seat *seat = compositor->seat;
+	struct spider_desktop *desktop = view->desktop;
+	struct wlr_seat *seat = desktop->seat;
 	struct wlr_surface *prev_surface = seat->keyboard_state.focused_surface;
 	if (prev_surface == surface) {
 		/* Don't re-focus an already focused surface. */
@@ -60,7 +60,7 @@ void focus_view(struct spider_view *view, struct wlr_surface *surface) {
 	struct wlr_keyboard *keyboard = wlr_seat_get_keyboard(seat);
 	/* Move the view to the front */
 	wl_list_remove(&view->link);
-	wl_list_insert(&compositor->views, &view->link);
+	wl_list_insert(&desktop->views, &view->link);
 	/* Activate the new surface */
 	wlr_xdg_toplevel_set_activated(view->xdg_surface, true);
 	/*
@@ -84,15 +84,15 @@ static void keyboard_handle_modifiers(
 	 * same seat. You can swap out the underlying wlr_keyboard like this and
 	 * wlr_seat handles this transparently.
 	 */
-	wlr_seat_set_keyboard(keyboard->compositor->seat, keyboard->device);
+	wlr_seat_set_keyboard(keyboard->desktop->seat, keyboard->device);
 	/* Send modifiers to the client. */
-	wlr_seat_keyboard_notify_modifiers(keyboard->compositor->seat,
+	wlr_seat_keyboard_notify_modifiers(keyboard->desktop->seat,
 			&keyboard->device->keyboard->modifiers);
 }
 
-static bool handle_keybinding(struct spider_compositor *compositor, xkb_keysym_t sym) {
+static bool handle_keybinding(struct spider_desktop *desktop, xkb_keysym_t sym) {
 	/*
-	 * Here we handle compositor keybindings. This is when the compositor is
+	 * Here we handle desktop keybindings. This is when the desktop is
 	 * processing keys, rather than passing them on to the client for its own
 	 * processing.
 	 *
@@ -100,23 +100,23 @@ static bool handle_keybinding(struct spider_compositor *compositor, xkb_keysym_t
 	 */
 	switch (sym) {
 		case XKB_KEY_Escape:
-			wl_display_terminate(compositor->wl_display);
-			kill(compositor->client_server_pid, SIGKILL);
-			kill(compositor->client_shell_pid, SIGKILL);
+			wl_display_terminate(desktop->wl_display);
+			kill(desktop->client_server_pid, SIGKILL);
+			kill(desktop->client_shell_pid, SIGKILL);
 			break;
 		case XKB_KEY_F1:
 			/* Cycle to the next view */
-			if (wl_list_length(&compositor->views) < 2) {
+			if (wl_list_length(&desktop->views) < 2) {
 				break;
 			}
 			struct spider_view *current_view = wl_container_of(
-					compositor->views.next, current_view, link);
+					desktop->views.next, current_view, link);
 			struct spider_view *next_view = wl_container_of(
 					current_view->link.next, next_view, link);
 			focus_view(next_view, next_view->xdg_surface->surface);
 			/* Move the previous view to the end of the list */
 			wl_list_remove(&current_view->link);
-			wl_list_insert(compositor->views.prev, &current_view->link);
+			wl_list_insert(desktop->views.prev, &current_view->link);
 			break;
 		default:
 			return false;
@@ -129,9 +129,9 @@ static void keyboard_handle_key(
 	/* This event is raised when a key is pressed or released. */
 	struct spider_keyboard *keyboard =
 		wl_container_of(listener, keyboard, key);
-	struct spider_compositor *compositor = keyboard->compositor;
+	struct spider_desktop *desktop = keyboard->desktop;
 	struct wlr_event_keyboard_key *event = data;
-	struct wlr_seat *seat = compositor->seat;
+	struct wlr_seat *seat = desktop->seat;
 
 	/* Translate libinput keycode -> xkbcommon */
 	uint32_t keycode = event->keycode + 8;
@@ -144,9 +144,9 @@ static void keyboard_handle_key(
 	uint32_t modifiers = wlr_keyboard_get_modifiers(keyboard->device->keyboard);
 	if ((modifiers & WLR_MODIFIER_ALT) && event->state == WLR_KEY_PRESSED) {
 		/* If alt is held down and this button was _pressed_, we attempt to
-		 * process it as a compositor keybinding. */
+		 * process it as a desktop keybinding. */
 		for (int i = 0; i < nsyms; i++) {
-			handled = handle_keybinding(compositor, syms[i]);
+			handled = handle_keybinding(desktop, syms[i]);
 		}
 	}
 
@@ -158,11 +158,11 @@ static void keyboard_handle_key(
 	}
 }
 
-static void compositor_new_keyboard(struct spider_compositor *compositor,
+static void desktop_new_keyboard(struct spider_desktop *desktop,
 		struct wlr_input_device *device) {
 	struct spider_keyboard *keyboard =
 		calloc(1, sizeof(struct spider_keyboard));
-	keyboard->compositor = compositor;
+	keyboard->desktop = desktop;
 	keyboard->device = device;
 
 	/* We need to prepare an XKB keymap and assign it to the keyboard. This
@@ -183,33 +183,33 @@ static void compositor_new_keyboard(struct spider_compositor *compositor,
 	keyboard->key.notify = keyboard_handle_key;
 	wl_signal_add(&device->keyboard->events.key, &keyboard->key);
 
-	wlr_seat_set_keyboard(compositor->seat, device);
+	wlr_seat_set_keyboard(desktop->seat, device);
 
 	/* And add the keyboard to our list of keyboards */
-	wl_list_insert(&compositor->keyboards, &keyboard->link);
+	wl_list_insert(&desktop->keyboards, &keyboard->link);
 }
 
-static void compositor_new_pointer(struct spider_compositor *compositor,
+static void desktop_new_pointer(struct spider_desktop *desktop,
 		struct wlr_input_device *device) {
 	/* We don't do anything special with pointers. All of our pointer handling
-	 * is proxied through wlr_cursor. On another compositor, you might take this
+	 * is proxied through wlr_cursor. On another desktop, you might take this
 	 * opportunity to do libinput configuration on the device to set
 	 * acceleration, etc. */
-	wlr_cursor_attach_input_device(compositor->cursor, device);
+	wlr_cursor_attach_input_device(desktop->cursor, device);
 }
 
-static void compositor_new_input(struct wl_listener *listener, void *data) {
+static void desktop_new_input(struct wl_listener *listener, void *data) {
 	/* This event is raised by the backend when a new input device becomes
 	 * available. */
-	struct spider_compositor *compositor =
-		wl_container_of(listener, compositor, new_input);
+	struct spider_desktop *desktop =
+		wl_container_of(listener, desktop, new_input);
 	struct wlr_input_device *device = data;
 	switch (device->type) {
 		case WLR_INPUT_DEVICE_KEYBOARD:
-			compositor_new_keyboard(compositor, device);
+			desktop_new_keyboard(desktop, device);
 			break;
 		case WLR_INPUT_DEVICE_POINTER:
-			compositor_new_pointer(compositor, device);
+			desktop_new_pointer(desktop, device);
 			break;
 		default:
 			break;
@@ -218,19 +218,19 @@ static void compositor_new_input(struct wl_listener *listener, void *data) {
 	 * communiciated to the client. In TinyWL we always have a cursor, even if
 	 * there are no pointer devices, so we always include that capability. */
 	uint32_t caps = WL_SEAT_CAPABILITY_POINTER;
-	if (!wl_list_empty(&compositor->keyboards)) {
+	if (!wl_list_empty(&desktop->keyboards)) {
 		caps |= WL_SEAT_CAPABILITY_KEYBOARD;
 	}
-	wlr_seat_set_capabilities(compositor->seat, caps);
+	wlr_seat_set_capabilities(desktop->seat, caps);
 }
 
 static void seat_request_cursor(struct wl_listener *listener, void *data) {
-	struct spider_compositor *compositor = wl_container_of(
-			listener, compositor, request_cursor);
+	struct spider_desktop *desktop = wl_container_of(
+			listener, desktop, request_cursor);
 	/* This event is rasied by the seat when a client provides a cursor image */
 	struct wlr_seat_pointer_request_set_cursor_event *event = data;
 	struct wlr_seat_client *focused_client =
-		compositor->seat->pointer_state.focused_client;
+		desktop->seat->pointer_state.focused_client;
 	/* This can be sent by any client, so we check to make sure this one is
 	 * actually has pointer focus first. */
 	if (focused_client == event->seat_client) {
@@ -238,7 +238,7 @@ static void seat_request_cursor(struct wl_listener *listener, void *data) {
 		 * provided surface as the cursor image. It will set the hardware cursor
 		 * on the output that it's currently on and continue to do so as the
 		 * cursor moves between outputs. */
-		wlr_cursor_set_surface(compositor->cursor, event->surface,
+		wlr_cursor_set_surface(desktop->cursor, event->surface,
 				event->hotspot_x, event->hotspot_y);
 	}
 }
@@ -274,12 +274,12 @@ static bool view_at(struct spider_view *view,
 }
 
 struct spider_view *desktop_view_at(
-		struct spider_compositor *compositor, double lx, double ly,
+		struct spider_desktop *desktop, double lx, double ly,
 		struct wlr_surface **surface, double *sx, double *sy) {
 	/* This iterates over all of our surfaces and attempts to find one under the
-	 * cursor. This relies on compositor->views being ordered from top-to-bottom. */
+	 * cursor. This relies on desktop->views being ordered from top-to-bottom. */
 	struct spider_view *view;
-	wl_list_for_each(view, &compositor->views, link) {
+	wl_list_for_each(view, &desktop->views, link) {
 		if (view_at(view, lx, ly, surface, sx, sy)) {
 			return view;
 		}
@@ -319,7 +319,7 @@ static void render_surface(struct wlr_surface *surface,
 	 * output-local coordinates, or (2000 - 1920). */
 	double ox = 0, oy = 0;
 	wlr_output_layout_output_coords(
-			view->compositor->output_layout, output, &ox, &oy);
+			view->desktop->output_layout, output, &ox, &oy);
 	ox += view->x + sx, oy += view->y + sy;
 
 	/* We also have to apply the scale factor for HiDPI outputs. This is only
@@ -340,7 +340,7 @@ static void render_surface(struct wlr_surface *surface,
 	 * transforms to produce a model-view-projection matrix.
 	 *
 	 * Naturally you can do this any way you like, for example to make a 3D
-	 * compositor.
+	 * desktop.
 	 */
 	float matrix[9];
 	enum wl_output_transform transform =
@@ -362,7 +362,7 @@ static void output_frame(struct wl_listener *listener, void *data) {
 	 * generally at the output's refresh rate (e.g. 60Hz). */
 	struct spider_output *output =
 		wl_container_of(listener, output, frame);
-	struct wlr_renderer *renderer = output->compositor->renderer;
+	struct wlr_renderer *renderer = output->desktop->renderer;
 
 	struct timespec now;
 	clock_gettime(CLOCK_MONOTONIC, &now);
@@ -383,7 +383,7 @@ static void output_frame(struct wl_listener *listener, void *data) {
 	/* Each subsequent window we render is rendered on top of the last. Because
 	 * our view list is ordered front-to-back, we iterate over it backwards. */
 	struct spider_view *view;
-	wl_list_for_each_reverse(view, &output->compositor->views, link) {
+	wl_list_for_each_reverse(view, &output->desktop->views, link) {
 		if (!view->mapped) {
 			/* An unmapped view should not be rendered. */
 			continue;
@@ -414,17 +414,17 @@ static void output_frame(struct wl_listener *listener, void *data) {
 	wlr_output_commit(output->wlr_output);
 }
 
-static void compositor_new_output(struct wl_listener *listener, void *data) {
+static void desktop_new_output(struct wl_listener *listener, void *data) {
 	/* This event is rasied by the backend when a new output (aka a display or
 	 * monitor) becomes available. */
-	struct spider_compositor *compositor =
-		wl_container_of(listener, compositor, new_output);
+	struct spider_desktop *desktop =
+		wl_container_of(listener, desktop, new_output);
 	struct wlr_output *wlr_output = data;
 
 	/* Some backends don't have modes. DRM+KMS does, and we need to set a mode
 	 * before we can use the output. The mode is a tuple of (width, height,
 	 * refresh rate), and each monitor supports only a specific set of modes. We
-	 * just pick the first, a more sophisticated compositor would let the user
+	 * just pick the first, a more sophisticated desktop would let the user
 	 * configure it or pick the mode the display advertises as preferred. */
 	if (!wl_list_empty(&wlr_output->modes)) {
 		struct wlr_output_mode *mode =
@@ -436,17 +436,17 @@ static void compositor_new_output(struct wl_listener *listener, void *data) {
 	struct spider_output *output =
 		calloc(1, sizeof(struct spider_output));
 	output->wlr_output = wlr_output;
-	output->compositor = compositor;
+	output->desktop = desktop;
 	/* Sets up a listener for the frame notify event. */
 	output->frame.notify = output_frame;
 	wl_signal_add(&wlr_output->events.frame, &output->frame);
-	wl_list_insert(&compositor->outputs, &output->link);
+	wl_list_insert(&desktop->outputs, &output->link);
 
 	/* Adds this to the output layout. The add_auto function arranges outputs
 	 * from left-to-right in the order they appear. A more sophisticated
-	 * compositor would let the user configure the arrangement of outputs in the
+	 * desktop would let the user configure the arrangement of outputs in the
 	 * layout. */
-	wlr_output_layout_add_auto(compositor->output_layout, wlr_output);
+	wlr_output_layout_add_auto(desktop->output_layout, wlr_output);
 
 	/* Creating the global adds a wl_output global to the display, which Wayland
 	 * clients can see to find out information about the output (such as
@@ -477,36 +477,36 @@ static void xdg_surface_destroy(struct wl_listener *listener, void *data) {
 static void begin_interactive(struct spider_view *view,
 		enum spider_cursor_mode mode, uint32_t edges) {
 	/* This function sets up an interactive move or resize operation, where the
-	 * compositor stops propegating pointer events to clients and instead
+	 * desktop stops propegating pointer events to clients and instead
 	 * consumes them itself, to move or resize windows. */
-	struct spider_compositor *compositor = view->compositor;
+	struct spider_desktop *desktop = view->desktop;
 	struct wlr_surface *focused_surface =
-		compositor->seat->pointer_state.focused_surface;
+		desktop->seat->pointer_state.focused_surface;
 	if (view->xdg_surface->surface != focused_surface) {
 		/* Deny move/resize requests from unfocused clients. */
 		return;
 	}
-	compositor->grabbed_view = view;
-	compositor->cursor_mode = mode;
+	desktop->grabbed_view = view;
+	desktop->cursor_mode = mode;
 	struct wlr_box geo_box;
 	wlr_xdg_surface_get_geometry(view->xdg_surface, &geo_box);
 	if (mode == SPIDER_CURSOR_MOVE) {
-		compositor->grab_x = compositor->cursor->x - view->x;
-		compositor->grab_y = compositor->cursor->y - view->y;
+		desktop->grab_x = desktop->cursor->x - view->x;
+		desktop->grab_y = desktop->cursor->y - view->y;
 	} else {
-		compositor->grab_x = compositor->cursor->x + geo_box.x;
-		compositor->grab_y = compositor->cursor->y + geo_box.y;
+		desktop->grab_x = desktop->cursor->x + geo_box.x;
+		desktop->grab_y = desktop->cursor->y + geo_box.y;
 	}
-	compositor->grab_width = geo_box.width;
-	compositor->grab_height = geo_box.height;
-	compositor->resize_edges = edges;
+	desktop->grab_width = geo_box.width;
+	desktop->grab_height = geo_box.height;
+	desktop->resize_edges = edges;
 }
 
 static void xdg_toplevel_request_move(
 		struct wl_listener *listener, void *data) {
 	/* This event is raised when a client would like to begin an interactive
 	 * move, typically because the user clicked on their client-side
-	 * decorations. Note that a more sophisticated compositor should check the
+	 * decorations. Note that a more sophisticated desktop should check the
 	 * provied serial against a list of button press serials sent to this
 	 * client, to prevent the client from requesting this whenever they want. */
 	struct spider_view *view = wl_container_of(listener, view, request_move);
@@ -517,7 +517,7 @@ static void xdg_toplevel_request_resize(
 		struct wl_listener *listener, void *data) {
 	/* This event is raised when a client would like to begin an interactive
 	 * resize, typically because the user clicked on their client-side
-	 * decorations. Note that a more sophisticated compositor should check the
+	 * decorations. Note that a more sophisticated desktop should check the
 	 * provied serial against a list of button press serials sent to this
 	 * client, to prevent the client from requesting this whenever they want. */
 	struct wlr_xdg_toplevel_resize_event *event = data;
@@ -547,8 +547,8 @@ static void xdg_toplevel_request_fullscreen(
 static void new_xdg_surface(struct wl_listener *listener, void *data) {
 	/* This event is raised when wlr_xdg_shell receives a new xdg surface from a
 	 * client, either a toplevel (application window) or popup. */
-	struct spider_compositor *compositor =
-		wl_container_of(listener, compositor, new_xdg_surface);
+	struct spider_desktop *desktop =
+		wl_container_of(listener, desktop, new_xdg_surface);
 	struct wlr_xdg_surface *xdg_surface = data;
 	if (xdg_surface->role != WLR_XDG_SURFACE_ROLE_TOPLEVEL) {
 		return;
@@ -557,7 +557,7 @@ static void new_xdg_surface(struct wl_listener *listener, void *data) {
 	/* Allocate a spider_view for this surface */
 	struct spider_view *view =
 		calloc(1, sizeof(struct spider_view));
-	view->compositor = compositor;
+	view->desktop = desktop;
 	view->xdg_surface = xdg_surface;
 
 	/* Listen to the various events it can emit */
@@ -582,7 +582,7 @@ static void new_xdg_surface(struct wl_listener *listener, void *data) {
 	wl_signal_add(&toplevel->events.request_fullscreen, &view->request_fullscreen);
 
 	/* Add it to the list of views. */
-	wl_list_insert(&compositor->views, &view->link);
+	wl_list_insert(&desktop->views, &view->link);
 }
 
 static void handle_layer_shell_surface(struct wl_listener *listener, void *data)
@@ -599,24 +599,24 @@ static void handle_layer_shell_surface(struct wl_listener *listener, void *data)
 			layer_surface->client_pending.margin.left);
 }
 
-int spider_preinit_compositor(struct spider_compositor *compositor)
+int spider_preinit_desktop(struct spider_desktop *desktop)
 {
 	/* The Wayland display is managed by libwayland. It handles accepting
 	 * clients from the Unix socket, manging Wayland globals, and so on. */
-	compositor->wl_display = wl_display_create();
-	compositor->wl_event_loop = wl_display_get_event_loop(compositor->wl_display);
+	desktop->wl_display = wl_display_create();
+	desktop->wl_event_loop = wl_display_get_event_loop(desktop->wl_display);
 	/* The backend is a wlroots feature which abstracts the underlying input and
 	 * output hardware. The autocreate option will choose the most suitable
 	 * backend based on the current environment, such as opening an X11 window
-	 * if an X11 compositor is running. The NULL argument here optionally allows you
+	 * if an X11 desktop is running. The NULL argument here optionally allows you
 	 * to pass in a custom renderer if wlr_renderer doesn't meet your needs. The
 	 * backend uses the renderer, for example, to fall back to software cursors
 	 * if the backend does not support hardware cursors (some older GPUs
 	 * don't). */
-	compositor->backend = wlr_backend_autocreate(compositor->wl_display, NULL);
-	compositor->noop_backend = wlr_noop_backend_create(compositor->wl_display);
+	desktop->backend = wlr_backend_autocreate(desktop->wl_display, NULL);
+	desktop->noop_backend = wlr_noop_backend_create(desktop->wl_display);
 
-	if (!compositor->backend) {
+	if (!desktop->backend) {
 		spider_err("Unable to create backend");
 		return -1;
 	}
@@ -624,7 +624,7 @@ int spider_preinit_compositor(struct spider_compositor *compositor)
 	return 0;
 }
 
-int spider_init_compositor(struct spider_compositor *compositor)
+int spider_init_desktop(struct spider_desktop *desktop)
 {
 	if (g_options.verbose) {
 		wlr_log_init(WLR_DEBUG, NULL);
@@ -637,25 +637,25 @@ int spider_init_compositor(struct spider_compositor *compositor)
 	/* If we don't provide a renderer, autocreate makes a GLES2 renderer for us.
 	 * The renderer is responsible for defining the various pixel formats it
 	 * supports for shared memory, this configures that for clients. */
-	compositor->renderer = wlr_backend_get_renderer(compositor->backend);
-	wlr_renderer_init_wl_display(compositor->renderer, compositor->wl_display);
+	desktop->renderer = wlr_backend_get_renderer(desktop->backend);
+	wlr_renderer_init_wl_display(desktop->renderer, desktop->wl_display);
 
-	/* This creates some hands-off wlroots interfaces. The compositor is
+	/* This creates some hands-off wlroots interfaces. The desktop is
 	 * necessary for clients to allocate surfaces and the data device manager
 	 * handles the clipboard. Each of these wlroots interfaces has room for you
 	 * to dig your fingers in and play with their behavior if you want. */
-	wlr_compositor_create(compositor->wl_display, compositor->renderer);
-	wlr_data_device_manager_create(compositor->wl_display);
+	wlr_compositor_create(desktop->wl_display, desktop->renderer);
+	wlr_data_device_manager_create(desktop->wl_display);
 
 	/* Creates an output layout, which a wlroots utility for working with an
 	 * arrangement of screens in a physical layout. */
-	compositor->output_layout = wlr_output_layout_create();
+	desktop->output_layout = wlr_output_layout_create();
 
 	/* Configure a listener to be notified when new outputs are available on the
 	 * backend. */
-	wl_list_init(&compositor->outputs);
-	compositor->new_output.notify = compositor_new_output;
-	wl_signal_add(&compositor->backend->events.new_output, &compositor->new_output);
+	wl_list_init(&desktop->outputs);
+	desktop->new_output.notify = desktop_new_output;
+	wl_signal_add(&desktop->backend->events.new_output, &desktop->new_output);
 
 	/* Set up our list of views and the xdg-shell. The xdg-shell is a Wayland
 	 * protocol which is used for application windows. For more detail on
@@ -663,19 +663,19 @@ int spider_init_compositor(struct spider_compositor *compositor)
 	 *
 	 * https://drewdevault.com/2018/07/29/Wayland-shells.html
 	 */
-	wl_list_init(&compositor->views);
+	wl_list_init(&desktop->views);
 
-	compositor->layer_shell = wlr_layer_shell_v1_create(compositor->wl_display);
-	wl_signal_add(&compositor->layer_shell->events.new_surface,
-			&compositor->layer_shell_surface);
-	compositor->layer_shell_surface.notify = handle_layer_shell_surface;
+	desktop->layer_shell = wlr_layer_shell_v1_create(desktop->wl_display);
+	wl_signal_add(&desktop->layer_shell->events.new_surface,
+			&desktop->layer_shell_surface);
+	desktop->layer_shell_surface.notify = handle_layer_shell_surface;
 
-	compositor->xdg_shell = wlr_xdg_shell_create(compositor->wl_display);
-	compositor->new_xdg_surface.notify = new_xdg_surface;
-	wl_signal_add(&compositor->xdg_shell->events.new_surface,
-			&compositor->new_xdg_surface);
+	desktop->xdg_shell = wlr_xdg_shell_create(desktop->wl_display);
+	desktop->new_xdg_surface.notify = new_xdg_surface;
+	wl_signal_add(&desktop->xdg_shell->events.new_surface,
+			&desktop->new_xdg_surface);
 
-	spider_create_cursor(compositor);
+	spider_create_cursor(desktop);
 
 	/*
 	 * Configures a seat, which is a single "seat" at which a user sits and
@@ -683,26 +683,26 @@ int spider_init_compositor(struct spider_compositor *compositor)
 	 * pointer, touch, and drawing tablet device. We also rig up a listener to
 	 * let us know when new input devices are available on the backend.
 	 */
-	wl_list_init(&compositor->keyboards);
-	compositor->new_input.notify = compositor_new_input;
-	wl_signal_add(&compositor->backend->events.new_input, &compositor->new_input);
-	compositor->seat = wlr_seat_create(compositor->wl_display, "seat0");
-	compositor->request_cursor.notify = seat_request_cursor;
-	wl_signal_add(&compositor->seat->events.request_set_cursor,
-			&compositor->request_cursor);
+	wl_list_init(&desktop->keyboards);
+	desktop->new_input.notify = desktop_new_input;
+	wl_signal_add(&desktop->backend->events.new_input, &desktop->new_input);
+	desktop->seat = wlr_seat_create(desktop->wl_display, "seat0");
+	desktop->request_cursor.notify = seat_request_cursor;
+	wl_signal_add(&desktop->seat->events.request_set_cursor,
+			&desktop->request_cursor);
 
 	/* Add a Unix socket to the Wayland display. */
-	const char *socket = wl_display_add_socket_auto(compositor->wl_display);
+	const char *socket = wl_display_add_socket_auto(desktop->wl_display);
 	if (!socket) {
-		wlr_backend_destroy(compositor->backend);
+		wlr_backend_destroy(desktop->backend);
 		return 1;
 	}
 
 	/* Start the backend. This will enumerate outputs and inputs, become the DRM
 	 * master, etc */
-	if (!wlr_backend_start(compositor->backend)) {
-		wlr_backend_destroy(compositor->backend);
-		wl_display_destroy(compositor->wl_display);
+	if (!wlr_backend_start(desktop->backend)) {
+		wlr_backend_destroy(desktop->backend);
+		wl_display_destroy(desktop->wl_display);
 		return 1;
 	}
 
@@ -725,16 +725,16 @@ int spider_init_compositor(struct spider_compositor *compositor)
 		}
 	}
 	/* Run the Wayland event loop. This does not return until you exit the
-	 * compositor. Starting the backend rigged up all of the necessary event
+	 * desktop. Starting the backend rigged up all of the necessary event
 	 * loop configuration to listen to libinput events, DRM events, generate
 	 * frame events at the refresh rate, and so on. */
-	wlr_log(WLR_INFO, "Running Wayland compositor on WAYLAND_DISPLAY=%s",
+	wlr_log(WLR_INFO, "Running Wayland desktop on WAYLAND_DISPLAY=%s",
 			socket);
-	wl_display_run(compositor->wl_display);
+	wl_display_run(desktop->wl_display);
 
-	/* Once wl_display_run returns, we shut down the compositor. */
-	wl_display_destroy_clients(compositor->wl_display);
-	wl_display_destroy(compositor->wl_display);
+	/* Once wl_display_run returns, we shut down the desktop. */
+	wl_display_destroy_clients(desktop->wl_display);
+	wl_display_destroy(desktop->wl_display);
 
 	return 0;
 }
