@@ -29,6 +29,7 @@
 #include <wlr/types/wlr_output_layout.h>
 #include <stdlib.h>
 #include "spider/desktop.h"
+#include "spider/layer.h"
 
 struct spider_output {
 	struct wl_list link;

@@ -32,12 +32,15 @@
 #include <unistd.h>
 #include "spider/desktop.h"
 #include "spider/cursor.h"
+#include "spider/launcher.h"
+#include "spider/layer.h"
 #include "common/log.h"
 #include "common/global_vars.h"
+#include "protocol/spider-protocol.h"
 
 void focus_view(struct spider_view *view, struct wlr_surface *surface) {
 	/* Note: this function only deals with keyboard focus. */
-	if (view == NULL) {
+	if (view == NULL || view->layer == LAYER_BACKGROUND) {
 		return;
 	}
 	struct spider_desktop *desktop = view->desktop;
@@ -392,6 +395,7 @@ static void new_xdg_surface(struct wl_listener *listener, void *data) {
 		calloc(1, sizeof(struct spider_view));
 	view->desktop = desktop;
 	view->xdg_surface = xdg_surface;
+	view->layer = LAYER_NONE;
 
 	/* Listen to the various events it can emit */
 	view->map.notify = xdg_surface_map;
@@ -437,7 +441,6 @@ int spider_preinit_desktop(struct spider_desktop *desktop)
 	/* The Wayland display is managed by libwayland. It handles accepting
 	 * clients from the Unix socket, manging Wayland globals, and so on. */
 	desktop->wl_display = wl_display_create();
-	desktop->wl_event_loop = wl_display_get_event_loop(desktop->wl_display);
 	/* The backend is a wlroots feature which abstracts the underlying input and
 	 * output hardware. The autocreate option will choose the most suitable
 	 * backend based on the current environment, such as opening an X11 window
@@ -455,6 +458,45 @@ int spider_preinit_desktop(struct spider_desktop *desktop)
 	}
 
 	return 0;
+}
+
+static void spider_desktop_set_background(struct wl_client *client,
+		struct wl_resource *resource,
+		struct wl_resource *output,
+		struct wl_resource *surface)
+{
+	spider_dbg("set background\n");
+}
+
+static const struct desktop_interface spider_desktop_implementation = {
+	.set_background = spider_desktop_set_background,
+};
+
+static void bind_spider_desktop(struct wl_client *client,
+		   void *data, uint32_t version, uint32_t id)
+{
+	struct spider_desktop *desktop = data;
+	struct wl_resource *resource;
+	spider_dbg("bind spider desktop version=%d id=%d\n", version, id);
+
+	resource = wl_resource_create(client, &desktop_interface, version, id);
+
+	/* TODO Must check this shell is child client */
+	/*
+	if (client == shell->child.client)
+	*/
+	wl_resource_set_implementation(resource, 
+			&spider_desktop_implementation, desktop, NULL);
+}
+
+static void register_spider_desktop_interface(struct spider_desktop *desktop)
+{
+	if (wl_global_create(desktop->wl_display,
+			     &desktop_interface, 1,
+			     desktop, bind_spider_desktop) == NULL) {
+		return;
+	}
+	spider_dbg("register spider desktop interfaces\n");
 }
 
 int spider_init_desktop(struct spider_desktop *desktop)
@@ -514,6 +556,8 @@ int spider_init_desktop(struct spider_desktop *desktop)
 	wl_signal_add(&desktop->seat->events.request_set_cursor,
 			&desktop->request_cursor);
 
+	/* custom interface */
+	register_spider_desktop_interface(desktop);
 
 	/* Add a Unix socket to the Wayland display. */
 	const char *socket = wl_display_add_socket_auto(desktop->wl_display);
@@ -543,11 +587,11 @@ int spider_init_desktop(struct spider_desktop *desktop)
 		}
 	}
 
+	desktop->wl_event_loop = wl_display_get_event_loop(desktop->wl_display);
 	if (g_options.shell) {
-		if (fork() == 0) {
-			execl("/bin/sh", "/bin/sh", "-c", g_options.shell, (void *)NULL);
-		}
+		wl_event_loop_add_idle(desktop->wl_event_loop, spider_launch_client, desktop);
 	}
+
 	/* Run the Wayland event loop. This does not return until you exit the
 	 * desktop. Starting the backend rigged up all of the necessary event
 	 * loop configuration to listen to libinput events, DRM events, generate

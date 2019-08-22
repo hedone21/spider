@@ -48,6 +48,7 @@
 #include <xkbcommon/xkbcommon.h>
 #include <stdbool.h>
 #include "spider/output.h"
+#include "spider/layer.h"
 
 struct spider_options {
 	char *shell;
@@ -130,6 +131,7 @@ struct spider_view {
 	struct wl_listener request_maximize;
 	struct wl_listener request_minimize;
 	struct wl_listener request_fullscreen;
+	int layer;
 	bool mapped;
 	int x, y;
 };

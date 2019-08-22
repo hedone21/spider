@@ -23,11 +23,12 @@
     SOFTWARE.
   </copyright>
 
-  <interface name="spider" version="1">
-    <request name="xxx">
+  <interface name="desktop" version="1">
+    <description summary="create desktop widgets and helpers">
+    </description>
+    <request name="set_background">
+      <arg name="output" type="object" interface="wl_output"/>
       <arg name="surface" type="object" interface="wl_surface"/>
-      <arg name="x" type="int"/>
-      <arg name="y" type="int"/>
     </request>
   </interface>
 </protocol>

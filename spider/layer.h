@@ -20,27 +20,18 @@
  * SOFTWARE.
  */
 
-#ifndef __SPIDER_CLIENT_SHELL_SHELL_H__
-#define __SPIDER_CLIENT_SHELL_SHELL_H__
+#ifndef __SPIDER_LAYER_H__
+#define __SPIDER_LAYER_H__
 
-#include <wayland-client.h>
-#include <gtk/gtk.h>
-#include <gdk/gdkwayland.h>
-#include <wlr/types/wlr_layer_shell_v1.h>
-#include "protocol/spider-client-protocol.h"
+enum layer_position {
+	LAYER_BACKGROUND,
+	LAYER_BOTTOM,
+	LAYER_TOP,
+	LAYER_OVERLAY,
 
-struct spider_shell {
-	struct wl_display *display;
-	struct wl_registry *registry;
-	struct wl_compositor *compositor;
-	struct wl_surface *surface;
-	struct wl_shm *shm;
-	struct wl_seat *seat;
-	struct wl_output *output;
-	struct wlr_layer_shell *layer_shell;
-	struct desktop *desktop;
+	LAYER_NONE,
+
+	MAX_LAYER_POSITION,
 };
-
-int shell_init(struct spider_shell *shell);
 
 #endif

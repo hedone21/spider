@@ -46,34 +46,44 @@ static gboolean close_web_cb(WebKitWebView* webView, GtkWidget* window)
 int main(int argc, char* argv[])
 {
 	struct spider_shell shell;
-	GtkWidget *win = NULL;
+	GtkWidget *window = NULL;
+	GdkWindow *gdk_window;
 	WebKitWebView *web = NULL;
 	char *url = NULL;
 
 	url = getenv(SPIDER_WEB_URL);
 	spider_dbg("URL=%s\n", url);
 
+	gdk_set_allowed_backends("wayland");
 	gtk_init(&argc, &argv);
 
+	spider_dbg("URL=%s\n", url);
 	shell_init(&shell);
 
-	win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_default_size(GTK_WINDOW(win), 1280, 720);
-	gtk_window_set_decorated(GTK_WINDOW(win), FALSE);
-	gtk_window_fullscreen(GTK_WINDOW(win));
+	spider_dbg("URL=%s\n", url);
+	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_default_size(GTK_WINDOW(window), 1280, 720);
+	gtk_window_set_decorated(GTK_WINDOW(window), FALSE);
+	gtk_window_fullscreen(GTK_WINDOW(window));
+	gtk_widget_realize(window);
+
+	gdk_window = gtk_widget_get_window(window);
+	// gdk_wayland_window_set_use_custom_surface(gdk_window);
+	shell.surface = gdk_wayland_window_get_wl_surface(gdk_window);
+	// desktop_set_background(shell.desktop, shell.output, shell.surface);
 
 	web = WEBKIT_WEB_VIEW(webkit_web_view_new());
 
-	gtk_container_add(GTK_CONTAINER(win), GTK_WIDGET(web));
+	gtk_container_add(GTK_CONTAINER(window), GTK_WIDGET(web));
 
-	g_signal_connect(win, "destroy", G_CALLBACK(destroy_win_cb), NULL);
-	g_signal_connect(web, "close", G_CALLBACK(close_web_cb), win);
+	g_signal_connect(window, "destroy", G_CALLBACK(destroy_win_cb), NULL);
+	g_signal_connect(web, "close", G_CALLBACK(close_web_cb), window);
 
 	webkit_web_view_load_uri(web, url);
 
 	gtk_widget_grab_focus(GTK_WIDGET(web));
 
-	gtk_widget_show_all(win);
+	gtk_widget_show_all(window);
 
 	gtk_main();
 

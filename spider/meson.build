@@ -3,6 +3,7 @@ compositor_src = [
   'desktop.c',
   'output.c',
   'cursor.c',
+  'launcher.c',
   ]
 
 compositor_dep = [

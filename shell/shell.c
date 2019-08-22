@@ -42,6 +42,8 @@ static void registry_handle_global(void *data, struct wl_registry *registry,
 	} else if (strcmp(interface, zwlr_layer_shell_v1_interface.name) == 0) {
 		shell->layer_shell = wl_registry_bind(
 				registry, id, &zwlr_layer_shell_v1_interface, 1);
+	} else if (strcmp(interface, "desktop") == 0) {
+		shell->desktop = wl_registry_bind(registry, id, &desktop_interface, 1);
 	}
 }
 
@@ -71,6 +73,8 @@ int shell_init(struct spider_shell *shell)
 		goto OUT;
 	}
 	wl_registry_add_listener(shell->registry, &registry_listener, shell);
+
+	wl_display_roundtrip(shell->display);
 
 	status = wl_display_dispatch(shell->display);
 	if (status == -1) {
