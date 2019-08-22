@@ -38,6 +38,9 @@ struct spider_shell {
 	struct wl_seat *seat;
 	struct wl_output *output;
 	struct wlr_layer_shell *layer_shell;
+
+	GdkDisplay *gdk_display;
+
 	struct desktop *desktop;
 };
 

@@ -63,7 +63,8 @@ int shell_init(struct spider_shell *shell)
 	int ret = 1;
 	int status = -1;
 
-	shell->display = wl_display_connect(NULL);
+	shell->gdk_display = gdk_display_get_default();
+	shell->display = gdk_wayland_display_get_wl_display(shell->gdk_display);
 	if (shell->display == NULL) {
 		goto OUT;
 	}

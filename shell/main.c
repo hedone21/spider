@@ -66,12 +66,6 @@ int main(int argc, char* argv[])
 	gtk_window_set_decorated(GTK_WINDOW(window), FALSE);
 	gtk_window_fullscreen(GTK_WINDOW(window));
 	gtk_widget_realize(window);
-
-	gdk_window = gtk_widget_get_window(window);
-	// gdk_wayland_window_set_use_custom_surface(gdk_window);
-	shell.surface = gdk_wayland_window_get_wl_surface(gdk_window);
-	// desktop_set_background(shell.desktop, shell.output, shell.surface);
-
 	web = WEBKIT_WEB_VIEW(webkit_web_view_new());
 
 	gtk_container_add(GTK_CONTAINER(window), GTK_WIDGET(web));
@@ -82,6 +76,11 @@ int main(int argc, char* argv[])
 	webkit_web_view_load_uri(web, url);
 
 	gtk_widget_grab_focus(GTK_WIDGET(web));
+
+	gdk_window = gtk_widget_get_window(window);
+	// gdk_wayland_window_set_use_custom_surface(gdk_window);
+	shell.surface = gdk_wayland_window_get_wl_surface(gdk_window);
+	desktop_set_background(shell.desktop, shell.output, shell.surface);
 
 	gtk_widget_show_all(window);
 
