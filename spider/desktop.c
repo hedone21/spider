@@ -501,6 +501,8 @@ static void register_spider_desktop_interface(struct spider_desktop *desktop)
 
 int spider_init_desktop(struct spider_desktop *desktop)
 {
+	int child_pid;
+
 	if (g_options.verbose) {
 		wlr_log_init(WLR_DEBUG, NULL);
 	}else if (g_options.debug) {
@@ -582,9 +584,17 @@ int spider_init_desktop(struct spider_desktop *desktop)
 	}
 
 	if (g_options.server) {
-		if (fork() == 0) {
+		child_pid = fork();
+		if (child_pid == 0) {
+			spider_dbg("Launch server [%s]\n", g_options.server);
 			execl("/bin/sh", "/bin/sh", "-c", g_options.server, (void *)NULL);
+			exit(-1);
+		}else if (child_pid < 0) {
+			spider_err("Failed to fork\n");
+			exit(-1);
 		}
+
+		desktop->client_server_pid = child_pid;
 	}
 
 	desktop->wl_event_loop = wl_display_get_event_loop(desktop->wl_display);

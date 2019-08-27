@@ -80,11 +80,13 @@ error:
 
 void spider_launch_client(struct spider_desktop *desktop)
 {
+	int child_pid;
 	int fd;
 	int sv[2];
 	spider_socketpair_cloexec(AF_UNIX, SOCK_STREAM, 0, sv);
 
-	if (fork() == 0) {
+	child_pid = fork();
+	if (child_pid == 0) {
 		sigset_t sigs;
 		int clientfd;
 		char s[32];
@@ -98,10 +100,16 @@ void spider_launch_client(struct spider_desktop *desktop)
 		snprintf(s, sizeof s, "%d", clientfd);
 		setenv("WAYLAND_SOCKET", s, 1);
 
+		spider_dbg("Launch shell [%s]\n", g_options.shell);
 		fd = execl("/bin/sh", "/bin/sh", "-c", g_options.shell, (void *)NULL);
 
 		exit(-1);
+	}else if (child_pid < 0) {
+		spider_err("Failed to fork\n");
+		exit(-1);
 	}
+
+	desktop->client_shell_pid = child_pid;
 
 	close(sv[1]);
 	wl_client_create(desktop->wl_display, sv[0]);
