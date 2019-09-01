@@ -24,6 +24,15 @@
 #include "common/log.h"
 #include "protocol/wlr-layer-shell-unstable-v1-client-protocol.h"
 
+static void xdg_wm_base_ping(void *data, struct xdg_wm_base *shell, uint32_t serial)
+{
+	xdg_wm_base_pong(shell, serial);
+}
+
+static const struct xdg_wm_base_listener wm_base_listener = {
+	.ping = xdg_wm_base_ping,
+};
+
 static void registry_handle_global(void *data, struct wl_registry *registry, 
 		uint32_t id, const char *interface, uint32_t version)
 {
@@ -42,6 +51,9 @@ static void registry_handle_global(void *data, struct wl_registry *registry,
 	} else if (strcmp(interface, zwlr_layer_shell_v1_interface.name) == 0) {
 		shell->layer_shell = wl_registry_bind(
 				registry, id, &zwlr_layer_shell_v1_interface, 1);
+	} else if (strcmp(interface, "xdg_wm_base") == 0) {
+		shell->wm_base = wl_registry_bind(registry, id, &xdg_wm_base_interface, 1);
+		xdg_wm_base_add_listener(shell->wm_base, &wm_base_listener, shell);
 	} else if (strcmp(interface, "desktop") == 0) {
 		shell->desktop = wl_registry_bind(registry, id, &desktop_interface, 1);
 	}

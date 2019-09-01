@@ -38,20 +38,27 @@
 #include "common/global_vars.h"
 #include "protocol/spider-protocol.h"
 
+static struct spider_desktop *desktop;
+
 void focus_view(struct spider_view *view, struct wlr_surface *surface) {
 	/* Note: this function only deals with keyboard focus. */
-	if (view == NULL || view->layer == LAYER_BACKGROUND) {
-		return;
-	}
 	struct spider_desktop *desktop = view->desktop;
 	struct wlr_seat *seat = desktop->seat;
 	struct wlr_surface *prev_surface = seat->keyboard_state.focused_surface;
+
+	if (view == NULL) {
+		return;
+	}
 	if (prev_surface == surface) {
 		/* Don't re-focus an already focused surface. */
 		return;
 	}
 	if (prev_surface) {
-		/*
+		if (view->layer == LAYER_BACKGROUND && 
+				!view->xdg_surface->toplevel->server_pending.activated) {
+			return;
+		}
+			/*
 		 * Deactivate the previously focused surface. This lets the client know
 		 * it no longer has focus and the client will repaint accordingly, e.g.
 		 * stop displaying a caret.
@@ -436,8 +443,13 @@ static void handle_layer_shell_surface(struct wl_listener *listener, void *data)
 			layer_surface->client_pending.margin.left);
 }
 
-int spider_preinit_desktop(struct spider_desktop *desktop)
+int spider_preinit_desktop()
 {
+	desktop = calloc(1, sizeof(*desktop));
+	if (desktop == NULL) {
+		spider_err("Allocation Failed\n");
+		return -1;
+	}
 	/* The Wayland display is managed by libwayland. It handles accepting
 	 * clients from the Unix socket, manging Wayland globals, and so on. */
 	desktop->wl_display = wl_display_create();
@@ -462,10 +474,22 @@ int spider_preinit_desktop(struct spider_desktop *desktop)
 
 static void spider_desktop_set_background(struct wl_client *client,
 		struct wl_resource *resource,
-		struct wl_resource *output,
 		struct wl_resource *surface)
 {
-	spider_dbg("set background\n");
+	struct wlr_surface *wlr_surface = wlr_surface_from_resource(surface);
+	static bool is_background_set = false;
+
+	if (is_background_set)
+		return;
+
+	struct spider_view *view;
+	wl_list_for_each(view, &desktop->views, link) {
+		if (view->xdg_surface->surface == wlr_surface) {
+			spider_dbg("set background %p / %p\n", view, wlr_surface);
+			view->layer = LAYER_BACKGROUND;
+			is_background_set = true;
+		}
+	}
 }
 
 static const struct desktop_interface spider_desktop_implementation = {
@@ -499,7 +523,7 @@ static void register_spider_desktop_interface(struct spider_desktop *desktop)
 	spider_dbg("register spider desktop interfaces\n");
 }
 
-int spider_init_desktop(struct spider_desktop *desktop)
+int spider_init_desktop()
 {
 	int child_pid;
 
@@ -531,8 +555,8 @@ int spider_init_desktop(struct spider_desktop *desktop)
 	wl_list_init(&desktop->views);
 
 	/*
-	desktop->xdg_shell_v6_surface.notify = handle_xdg_shell_v6_surface;
 	desktop->xdg_shell_v6 = wlr_xdg_shell_v6_create(server->wl_display);
+	desktop->xdg_shell_v6_surface.notify = handle_xdg_shell_v6_surface;
 	wl_signal_add(&desktop->xdg_shell_v6->events.new_surface,
 		&desktop->xdg_shell_v6_surface);
 	*/

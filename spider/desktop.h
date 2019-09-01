@@ -116,7 +116,7 @@ struct spider_desktop {
 	struct wlr_layer_shell_v1 *layer_shell;
 	struct wl_listener layer_shell_surface;
 	struct wlr_xdg_shell_v6 *xdg_shell_v6;
-	struct wl_listener wlr_xdg_shell_v6_surface;
+	struct wl_listener xdg_shell_v6_surface;
 };
 
 struct spider_view {
@@ -145,8 +145,8 @@ struct spider_keyboard {
 	struct wl_listener key;
 };
 
-int spider_preinit_desktop(struct spider_desktop *spider);
-int spider_init_desktop(struct spider_desktop *spider);
+int spider_preinit_desktop();
+int spider_init_desktop();
 void focus_view(struct spider_view *view, struct wlr_surface *surface);
 struct spider_view *desktop_view_at(struct spider_desktop *spider, double lx, double ly, struct wlr_surface **surface, double *sx, double *sy);
 

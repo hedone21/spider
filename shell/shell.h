@@ -28,6 +28,7 @@
 #include <gdk/gdkwayland.h>
 #include <wlr/types/wlr_layer_shell_v1.h>
 #include "protocol/spider-client-protocol.h"
+#include "protocol/xdg-shell-client-protocol.h"
 
 struct spider_shell {
 	struct wl_display *display;
@@ -38,6 +39,10 @@ struct spider_shell {
 	struct wl_seat *seat;
 	struct wl_output *output;
 	struct wlr_layer_shell *layer_shell;
+
+	struct xdg_wm_base *wm_base;
+	struct xdg_shell *xdg_shell;
+	struct xdg_surface *xdg_surface;
 
 	GdkDisplay *gdk_display;
 

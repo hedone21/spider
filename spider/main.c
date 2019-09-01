@@ -38,7 +38,6 @@ void help()
 
 int main(int argc, char *argv[]) 
 {
-	struct spider_desktop *desktop;
 
 	static struct option long_options[] = {
 		{"help", no_argument, NULL, 'h'},
@@ -94,7 +93,6 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 
-	desktop = calloc(1, sizeof(*desktop));
-	spider_preinit_desktop(desktop);
-	spider_init_desktop(desktop);
+	spider_preinit_desktop();
+	spider_init_desktop();
 }

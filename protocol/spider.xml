@@ -27,7 +27,6 @@
     <description summary="create desktop widgets and helpers">
     </description>
     <request name="set_background">
-      <arg name="output" type="object" interface="wl_output"/>
       <arg name="surface" type="object" interface="wl_surface"/>
     </request>
   </interface>
