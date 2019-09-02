@@ -32,6 +32,14 @@
 #include "common/log.h"
 #include "common/global_vars.h"
 
+static void scale_fullscreen(int *screen_width, int *screen_height)
+{
+	GdkScreen *screen = gdk_screen_get_default ();
+
+	*screen_width = gdk_screen_get_width(screen);
+	*screen_height = gdk_screen_get_height(screen);
+}
+
 static void draw_win_cb(GtkWidget* widget, cairo_t *cr, gpointer data)
 {
 	struct spider_shell *shell = data;
@@ -56,6 +64,8 @@ int main(int argc, char* argv[])
 	GtkWidget *window = NULL;
 	GdkWindow *gdk_window;
 	WebKitWebView *web = NULL;
+	int screen_width;
+	int screen_height;
 	char *url = NULL;
 
 	url = getenv(SPIDER_WEB_URL);
@@ -64,12 +74,12 @@ int main(int argc, char* argv[])
 	gdk_set_allowed_backends("wayland");
 	gtk_init(&argc, &argv);
 
-	spider_dbg("URL=%s\n", url);
 	shell_init(&shell);
 
-	spider_dbg("URL=%s\n", url);
+	scale_fullscreen(&screen_width, &screen_height);
+
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_default_size(GTK_WINDOW(window), 1280, 720);
+	gtk_window_set_default_size(GTK_WINDOW(window), screen_width, screen_height);
 	gtk_window_set_decorated(GTK_WINDOW(window), FALSE);
 	gtk_window_fullscreen(GTK_WINDOW(window));
 	gtk_widget_realize(window);
