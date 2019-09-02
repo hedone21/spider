@@ -5,6 +5,7 @@ compositor_src = [
   'output.c',
   'cursor.c',
   'launcher.c',
+  'view.c',
   ]
 
 compositor_dep = [

@@ -23,6 +23,7 @@
 #include <wlr/types/wlr_presentation_time.h>
 #include "spider/desktop.h"
 #include "spider/output.h"
+#include "spider/view.h"
 #include "common/log.h"
 
 /* This function is called for every surface that needs to be rendered. */

@@ -20,6 +20,7 @@
 
 #include "spider/desktop.h"
 #include "spider/xdg_shell.h"
+#include "spider/view.h"
 #include "common/log.h"
 
 static void xdg_surface_map(struct wl_listener *listener, void *data)

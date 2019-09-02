@@ -119,23 +119,6 @@ struct spider_desktop {
 	struct wl_listener xdg_shell_v6_surface;
 };
 
-struct spider_view {
-	struct wl_list link;
-	struct spider_desktop *desktop;
-	struct wlr_xdg_surface *xdg_surface;
-	struct wl_listener map;
-	struct wl_listener unmap;
-	struct wl_listener destroy;
-	struct wl_listener request_move;
-	struct wl_listener request_resize;
-	struct wl_listener request_maximize;
-	struct wl_listener request_minimize;
-	struct wl_listener request_fullscreen;
-	int layer;
-	bool mapped;
-	int x, y;
-};
-
 struct spider_keyboard {
 	struct wl_list link;
 	struct spider_desktop *desktop;
@@ -147,7 +130,5 @@ struct spider_keyboard {
 
 int spider_preinit_desktop();
 int spider_init_desktop();
-void focus_view(struct spider_view *view, struct wlr_surface *surface);
-struct spider_view *desktop_view_at(struct spider_desktop *spider, double lx, double ly, struct wlr_surface **surface, double *sx, double *sy);
 
 #endif /* __SERVER_H__ */

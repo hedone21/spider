@@ -24,6 +24,7 @@
 
 #include "spider/desktop.h"
 #include "spider/cursor.h"
+#include "spider/view.h"
 
 static void process_cursor_move(struct spider_desktop *desktop, uint32_t time) {
 	/* Move the grabbed view to the new position. */
