@@ -492,7 +492,7 @@ static void spider_desktop_set_background(struct wl_client *client,
 	}
 }
 
-static const struct desktop_interface spider_desktop_implementation = {
+static const struct spider_desktop_manager_v1_interface spider_desktop_implementation = {
 	.set_background = spider_desktop_set_background,
 };
 
@@ -503,7 +503,7 @@ static void bind_spider_desktop(struct wl_client *client,
 	struct wl_resource *resource;
 	spider_dbg("bind spider desktop version=%d id=%d\n", version, id);
 
-	resource = wl_resource_create(client, &desktop_interface, version, id);
+	resource = wl_resource_create(client, &spider_desktop_manager_v1_interface, version, id);
 
 	/* TODO Must check this shell is child client */
 	/*
@@ -516,7 +516,7 @@ static void bind_spider_desktop(struct wl_client *client,
 static void register_spider_desktop_interface(struct spider_desktop *desktop)
 {
 	if (wl_global_create(desktop->wl_display,
-			     &desktop_interface, 1,
+			     &spider_desktop_manager_v1_interface, 1,
 			     desktop, bind_spider_desktop) == NULL) {
 		return;
 	}

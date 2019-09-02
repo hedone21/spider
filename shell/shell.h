@@ -46,7 +46,7 @@ struct spider_shell {
 
 	GdkDisplay *gdk_display;
 
-	struct desktop *desktop;
+	struct spider_desktop_manager_v1 *desktop_manager;
 };
 
 int shell_init(struct spider_shell *shell);

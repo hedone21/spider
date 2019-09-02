@@ -44,7 +44,7 @@ static void draw_win_cb(GtkWidget* widget, cairo_t *cr, gpointer data)
 {
 	struct spider_shell *shell = data;
 
-	desktop_set_background(shell->desktop, shell->surface);
+	spider_desktop_manager_v1_set_background(shell->desktop_manager, shell->surface);
 }
 
 static void destroy_win_cb(GtkWidget* widget, GtkWidget* window)
