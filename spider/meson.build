@@ -1,6 +1,7 @@
 compositor_src = [
   'main.c',
   'desktop.c',
+  'xdg_shell.c',
   'output.c',
   'cursor.c',
   'launcher.c',
