@@ -409,6 +409,20 @@ int spider_init_desktop()
 		wl_event_loop_add_idle(desktop->wl_event_loop, spider_launch_client, desktop);
 	}
 
+	if (g_options.panel) {
+		child_pid = fork();
+		if (child_pid == 0) {
+			spider_dbg("Launch panel [%s]\n", g_options.panel);
+			execl("/bin/sh", "/bin/sh", "-c", g_options.panel, (void *)NULL);
+			exit(-1);
+		}else if (child_pid < 0) {
+			spider_err("Failed to fork\n");
+			exit(-1);
+		}
+
+		desktop->client_server_pid = child_pid;
+	}
+
 	/* Run the Wayland event loop. This does not return until you exit the
 	 * desktop. Starting the backend rigged up all of the necessary event
 	 * loop configuration to listen to libinput events, DRM events, generate

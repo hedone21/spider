@@ -51,6 +51,7 @@
 #include "spider/layer.h"
 
 struct spider_options {
+	char *panel;
 	char *shell;
 	char *server;
 	bool debug;

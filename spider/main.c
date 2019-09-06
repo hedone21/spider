@@ -29,6 +29,7 @@
 
 struct spider_options g_options = {
 	.shell = NULL,
+	.panel = NULL,
 };
 
 void help()
@@ -44,6 +45,7 @@ int main(int argc, char *argv[])
 		{"debug", no_argument, NULL, 'd'},
 		{"verbose", no_argument, NULL, 'V'},
 		{"version", no_argument, NULL, 'v'},
+		{"panel", required_argument, NULL, 'p'},
 		{"shell", required_argument, NULL, 's'},
 		{"server", required_argument, NULL, 'r'},
 		{0, 0, 0, 0}
@@ -51,7 +53,7 @@ int main(int argc, char *argv[])
 
 	int c;
 	int option_index = 0;
-	while ((c = getopt_long(argc, argv, "hdVvs:r:", long_options, &option_index)) != -1) {
+	while ((c = getopt_long(argc, argv, "hdVvp:s:r:", long_options, &option_index)) != -1) {
 		int arglen;
 
 		switch (c) {
@@ -63,6 +65,15 @@ int main(int argc, char *argv[])
 			break;
 		case 'v':
 			/* TODO */
+		case 'p':
+			arglen = strlen(optarg);
+			if (arglen >= PATH_MAX) {
+				return -1;
+			}
+
+			g_options.panel = malloc(sizeof(char) * (arglen + 1));
+			strcpy(g_options.panel, optarg);
+			break;
 			break;
 		case 's':
 			arglen = strlen(optarg);

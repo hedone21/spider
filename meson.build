@@ -23,5 +23,6 @@ wlr_dep = dependency('wlroots', version: wlroots_version)
 
 subdir('protocol')
 subdir('spider')
+subdir('panel')
 subdir('shell')
 subdir('server')

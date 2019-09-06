@@ -27,6 +27,7 @@ static void xdg_surface_map(struct wl_listener *listener, void *data)
 {
 	/* Called when the surface is mapped, or ready to display on-screen. */
 	struct spider_view *view = wl_container_of(listener, view, map);
+	spider_dbg("new %s is started\n", view->xdg_surface->toplevel->title);
 	view->mapped = true;
 	focus_view(view, view->xdg_surface->surface);
 }
