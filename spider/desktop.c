@@ -37,7 +37,7 @@
 #include "spider/view.h"
 #include "common/log.h"
 #include "common/global_vars.h"
-#include "protocol/spider-protocol.h"
+#include "protocol/spider-desktop-manager-v1-protocol.h"
 
 static struct spider_desktop *desktop;
 

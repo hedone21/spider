@@ -27,7 +27,7 @@
 #include <gtk/gtk.h>
 #include <gdk/gdkwayland.h>
 #include <wlr/types/wlr_layer_shell_v1.h>
-#include "protocol/spider-client-protocol.h"
+#include "protocol/spider-desktop-manager-v1-client-protocol.h"
 #include "protocol/xdg-shell-client-protocol.h"
 
 struct spider_shell {
