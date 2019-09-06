@@ -36,11 +36,7 @@ void focus_view(struct spider_view *view, struct wlr_surface *surface)
 		return;
 	}
 	if (prev_surface) {
-		if (view->layer == LAYER_BACKGROUND && 
-				!view->xdg_surface->toplevel->server_pending.activated) {
-			return;
-		}
-			/*
+		/*
 		 * Deactivate the previously focused surface. This lets the client know
 		 * it no longer has focus and the client will repaint accordingly, e.g.
 		 * stop displaying a caret.
@@ -50,9 +46,12 @@ void focus_view(struct spider_view *view, struct wlr_surface *surface)
 		wlr_xdg_toplevel_set_activated(previous, false);
 	}
 	struct wlr_keyboard *keyboard = wlr_seat_get_keyboard(seat);
-	/* Move the view to the front */
-	wl_list_remove(&view->link);
-	wl_list_insert(&desktop->views, &view->link);
+	if (view->layer != LAYER_BACKGROUND ||
+			view->xdg_surface->toplevel->server_pending.activated) {
+		/* Move the view to the front */
+		wl_list_remove(&view->link);
+		wl_list_insert(&desktop->views, &view->link);
+	}
 	/* Activate the new surface */
 	wlr_xdg_toplevel_set_activated(view->xdg_surface, true);
 	/*
