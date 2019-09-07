@@ -163,7 +163,7 @@ static int on_url_cb(http_parser *parser, const char *at, size_t length)
 	}
 
 	strncpy(url, at, length);
-	spider_dbg("%s(%s)\n", url, get_http_method(parser));
+	// spider_dbg("%s(%s)\n", url, get_http_method(parser));
 
 	if (strncmp(url, "/", 2) == 0 || strncmp(url, "/index.html", 12) == 0) {
 		html_load_index(info);
@@ -181,7 +181,7 @@ static int on_status_cb(http_parser *parser, const char *at, size_t length)
 
 	strncpy(status, at, length);
 
-	spider_dbg("%s\n", status);
+	// spider_dbg("%s\n", status);
 
 	return 0;
 }
@@ -193,7 +193,7 @@ static int on_header_field_cb(http_parser *parser, const char *at, size_t length
 
 	strncpy(header_field, at, length);
 
-	spider_dbg("%s\n", header_field);
+	// spider_dbg("%s\n", header_field);
 
 	return 0;
 }
@@ -205,7 +205,7 @@ static int on_header_value_cb(http_parser *parser, const char *at, size_t length
 
 	strncpy(header_value, at, length);
 
-	spider_dbg("%s\n", header_value);
+	// spider_dbg("%s\n", header_value);
 
 	return 0;
 }
@@ -217,7 +217,7 @@ static int on_body_cb(http_parser *parser, const char *at, size_t length)
 
 	strncpy(body, at, length);
 
-	spider_dbg("%s\n", body);
+	// spider_dbg("%s\n", body);
 
 	if (strncmp(body, "command", 7) == 0) {
 		command_launch(body + 8);
