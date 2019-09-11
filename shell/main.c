@@ -52,7 +52,41 @@ static void destroy_win_cb(GtkWidget* widget, GtkWidget* window)
 	gtk_main_quit();
 }
 
-static gboolean close_web_cb(WebKitWebView* webView, GtkWidget* window)
+gboolean decide_policy_web_cb(WebKitWebView *webview, WebKitPolicyDecision *decision, WebKitPolicyDecisionType type)
+{
+	WebKitNavigationPolicyDecision *navigation_decision = NULL;
+	WebKitNavigationAction *navigation_action = NULL;
+	WebKitURIRequest *uri_request = NULL;
+	WebKitResponsePolicyDecision *response = NULL;
+	const char *uri;
+	const char *http_method;
+
+	switch (type) {
+	case WEBKIT_POLICY_DECISION_TYPE_NAVIGATION_ACTION: 
+		navigation_decision = WEBKIT_NAVIGATION_POLICY_DECISION(decision);
+		navigation_action = webkit_navigation_policy_decision_get_navigation_action(navigation_decision);
+		uri_request = webkit_navigation_action_get_request(navigation_action);
+		uri = webkit_uri_request_get_uri(uri_request);
+		http_method = webkit_uri_request_get_http_method(uri_request);
+		spider_dbg("%s\n%s\n", uri, http_method);
+		/* Make a policy decision here. */
+		break;
+	case WEBKIT_POLICY_DECISION_TYPE_NEW_WINDOW_ACTION:
+		navigation_decision = WEBKIT_NAVIGATION_POLICY_DECISION(decision);
+		/* Make a policy decision here. */
+		break;
+	case WEBKIT_POLICY_DECISION_TYPE_RESPONSE:
+		response = WEBKIT_RESPONSE_POLICY_DECISION(decision);
+		/* Make a policy decision here. */
+		break;
+	default:
+		/* Making no decision results in webkit_policy_decision_use(). */
+		return FALSE;
+	}
+	return TRUE;
+}
+
+static gboolean close_web_cb(WebKitWebView *webView, GtkWidget *window)
 {
 	gtk_widget_destroy(window);
 	return TRUE;
@@ -89,6 +123,7 @@ int main(int argc, char* argv[])
 
 	g_signal_connect(window, "draw", G_CALLBACK(draw_win_cb), &shell);
 	g_signal_connect(window, "destroy", G_CALLBACK(destroy_win_cb), NULL);
+	g_signal_connect(web, "decide-policy", G_CALLBACK(decide_policy_web_cb), window);
 	g_signal_connect(web, "close", G_CALLBACK(close_web_cb), window);
 
 	webkit_web_view_load_uri(web, url);
