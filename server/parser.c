@@ -30,7 +30,7 @@
 #include "server/server.h"
 #include "server/parser.h"
 #include "server/html.h"
-#include "server/command.h"
+#include "common/command.h"
 #include "common/log.h"
 
 #define BUF_MAX 65536

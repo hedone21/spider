@@ -4,7 +4,10 @@ server_src = [
   'net.c',
   'parser.c',
   'html.c',
-  'command.c',
+  ]
+
+server_obj = [
+  'http-parser/libhttp_parser.a',
   ]
 
 server_dep = [
@@ -14,7 +17,8 @@ server_dep = [
 server_exe = executable(
   'server',
   server_src,
-  objects: 'http-parser/libhttp_parser.a',
+  objects: server_obj,
+  link_with: common_a,
   dependencies: server_dep,
   include_directories: include_directories('..'),
   name_prefix: '',

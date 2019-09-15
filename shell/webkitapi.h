@@ -18,35 +18,13 @@
  * SOFTWARE.
  */
 
-#ifndef __SPIDER_SHELL_SHELL_H__
-#define __SPIDER_SHELL_SHELL_H__
+#ifndef __SPIDER_SHELL_WEBKITAPI_H__
+#define __SPIDER_SHELL_WEBKITAPI_H__
 
-#include <wayland-client.h>
-#include <gtk/gtk.h>
-#include <gdk/gdkwayland.h>
-#include <wlr/types/wlr_layer_shell_v1.h>
-#include "protocol/spider-desktop-manager-v1-client-protocol.h"
-#include "protocol/xdg-shell-client-protocol.h"
+#include <webkit2/webkit2.h>
 
-struct spider_shell {
-	struct wl_display *display;
-	struct wl_registry *registry;
-	struct wl_compositor *compositor;
-	struct wl_surface *surface;
-	struct wl_shm *shm;
-	struct wl_seat *seat;
-	struct wl_output *output;
-	struct wlr_layer_shell *layer_shell;
-
-	struct xdg_wm_base *wm_base;
-	struct xdg_shell *xdg_shell;
-	struct xdg_surface *xdg_surface;
-
-	GdkDisplay *gdk_display;
-
-	struct spider_desktop_manager_v1 *desktop_manager;
-};
-
-int shell_init(struct spider_shell *shell);
+void wkapi_dp_cb(WebKitWebView *webview, WebKitPolicyDecision *decision, WebKitPolicyDecisionType type);
+void wkapi_sf_cb(WebKitWebView *webviewm, WebKitFormSubmissionRequest *request, gpointer data);
+void wkapi_close_cb(WebKitWebView *webView, GtkWidget *window);
 
 #endif

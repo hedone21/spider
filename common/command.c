@@ -1,6 +1,4 @@
 /*
- * Copyright (c) 2019 Minyoung.Go <hedone21@gmail.com>
- * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -20,9 +18,13 @@
  * SOFTWARE.
  */
 
-#ifndef __SPIDER_SERVER_COMMAND_H__
-#define __SPIDER_SERVER_COMMAND_H__
+#include "common/log.h"
 
-void command_launch(const char *command);
+void command_launch(const char *command)
+{
+	spider_dbg("launch command: %s\n", command);
 
-#endif
+	if (fork() == 0) {
+		execlp(command, command, (void *)NULL);
+	}
+}

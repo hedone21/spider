@@ -22,6 +22,7 @@ wlroots_version = '>=0.6'
 wlr_dep = dependency('wlroots', version: wlroots_version)
 
 subdir('protocol')
+subdir('common')
 subdir('spider')
 subdir('panel')
 subdir('shell')
