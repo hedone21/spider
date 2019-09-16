@@ -26,7 +26,7 @@
 #include <unistd.h>
 #include <gtk/gtk.h>
 #include "shell/shell.h"
-#include "shell/webkitapi.h"
+#include "common/webkitapi.h"
 #include "common/log.h"
 #include "common/global_vars.h"
 

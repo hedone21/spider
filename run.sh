@@ -1,7 +1,8 @@
 #!/bin/bash
 
 #export SPIDER_WEB_URL=http://localhost:2580/
-export SPIDER_WEB_URL=file://$PWD/html/desktop.html
+export SPIDER_WEB_URL=file://$PWD/html/shell.html
+export SPIDER_PANEL_URL=file://$PWD/html/panel.html
 export SPIDER_CLIENT_SERVER_PATH=web
 
 #$PWD/build/server/spider-server -s $PWD/build/client-shell/client -V

@@ -25,6 +25,7 @@
 #include <gtk/gtk.h>
 #include <gdk/gdkwayland.h>
 #include <wlr/types/wlr_layer_shell_v1.h>
+#include "common/webkitapi.h"
 #include "protocol/xdg-shell-client-protocol.h"
 
 struct spider_panel {
@@ -48,7 +49,7 @@ struct spider_panel {
 	// struct spider_panel_manager_v1 *panel_manager;
 	//
 	GtkWidget *window;
-	GtkWidget *panel;
+	WebKitWebView *panel;
 };
 
 int panel_init(struct spider_panel *panel);

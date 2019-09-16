@@ -19,6 +19,7 @@ panel_exe = executable(
   xdg_shell_unstable_v6_client_protocol_h,
   wlr_layer_shell_unstable_v1_protocol_c,
   wlr_layer_shell_unstable_v1_client_protocol_h,
+  link_with: common_a,
   dependencies : panel_dep, 
   include_directories: include_directories('..', '../protocol'),
   name_prefix: '',

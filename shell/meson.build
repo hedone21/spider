@@ -1,7 +1,6 @@
 shell_src = [
   'main.c',
   'shell.c',
-  'webkitapi.c',
   ]
 
 shell_dep = [

@@ -1,9 +1,11 @@
 common_src = [
   'command.c',
+  'webkitapi.c',
   ]
 
 common_dep = [
-
+  gtk_dep,
+  webkitgtk_dep,
   ]
 
 common_a = static_library(

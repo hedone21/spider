@@ -19,7 +19,7 @@
  */
 
 #include <gtk/gtk.h>
-#include "shell/webkitapi.h"
+#include "common/webkitapi.h"
 #include "common/command.c"
 #include "common/log.h"
 
