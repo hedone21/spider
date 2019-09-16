@@ -29,7 +29,7 @@ git submodule update
 cd server/http-parser/
 make package
 cd -
-meson build
+meson build -Dwith-server=true
 ninja -C build
 ./run.sh # need to be modified
 ```

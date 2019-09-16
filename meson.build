@@ -26,4 +26,6 @@ subdir('common')
 subdir('spider')
 subdir('panel')
 subdir('shell')
-subdir('server')
+if get_option('with-server')
+  subdir('server')
+endif

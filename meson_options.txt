@@ -1,0 +1,6 @@
+option(
+  'with-server',
+  type: 'boolean',
+  value: false,
+  description: 'build spider with server',
+  )
