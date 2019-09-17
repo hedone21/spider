@@ -51,7 +51,7 @@ static int set_cloexec_or_close(int fd)
 	return fd;
 }
 
-int spider_socketpair_cloexec(int domain, int type, int protocol, int *sv)
+static int socketpair_cloexec(int domain, int type, int protocol, int *sv)
 {
 	int ret;
 	ret = socketpair(domain, type | SOCK_CLOEXEC, protocol, sv);
@@ -78,12 +78,13 @@ error:
 	return -1;
 }
 
-void spider_launch_client(struct spider_desktop *desktop)
+void launch_client(struct spider_desktop *desktop)
 {
 	int child_pid;
 	int fd;
 	int sv[2];
-	spider_socketpair_cloexec(AF_UNIX, SOCK_STREAM, 0, sv);
+
+	socketpair_cloexec(AF_UNIX, SOCK_STREAM, 0, sv);
 
 	child_pid = fork();
 	if (child_pid == 0) {

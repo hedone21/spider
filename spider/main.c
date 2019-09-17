@@ -104,6 +104,6 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 
-	spider_preinit_desktop();
-	spider_init_desktop();
+	preinit_desktop();
+	init_desktop();
 }

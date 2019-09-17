@@ -23,7 +23,7 @@
 #include "spider/view.h"
 #include "common/log.h"
 
-static void xdg_surface_map(struct wl_listener *listener, void *data)
+static void handle_xdg_surface_map(struct wl_listener *listener, void *data)
 {
 	/* Called when the surface is mapped, or ready to display on-screen. */
 	struct spider_view *view = wl_container_of(listener, view, map);
@@ -32,14 +32,14 @@ static void xdg_surface_map(struct wl_listener *listener, void *data)
 	focus_view(view, view->xdg_surface->surface);
 }
 
-static void xdg_surface_unmap(struct wl_listener *listener, void *data)
+static void handle_xdg_surface_unmap(struct wl_listener *listener, void *data)
 {
 	/* Called when the surface is unmapped, and should no longer be shown. */
 	struct spider_view *view = wl_container_of(listener, view, unmap);
 	view->mapped = false;
 }
 
-static void xdg_surface_destroy(struct wl_listener *listener, void *data)
+static void handle_xdg_surface_destroy(struct wl_listener *listener, void *data)
 {
 	/* Called when the surface is destroyed and should never be shown again. */
 	struct spider_view *view = wl_container_of(listener, view, destroy);
@@ -75,7 +75,7 @@ static void begin_interactive(struct spider_view *view,	enum spider_cursor_mode 
 	desktop->resize_edges = edges;
 }
 
-static void xdg_toplevel_request_move(struct wl_listener *listener, void *data)
+static void handle_xdg_toplevel_request_move(struct wl_listener *listener, void *data)
 {
 	/* This event is raised when a client would like to begin an interactive
 	 * move, typically because the user clicked on their client-side
@@ -86,7 +86,7 @@ static void xdg_toplevel_request_move(struct wl_listener *listener, void *data)
 	begin_interactive(view, SPIDER_CURSOR_MOVE, 0);
 }
 
-static void xdg_toplevel_request_resize(struct wl_listener *listener, void *data)
+static void handle_xdg_toplevel_request_resize(struct wl_listener *listener, void *data)
 {
 	/* This event is raised when a client would like to begin an interactive
 	 * resize, typically because the user clicked on their client-side
@@ -98,26 +98,26 @@ static void xdg_toplevel_request_resize(struct wl_listener *listener, void *data
 	begin_interactive(view, SPIDER_CURSOR_RESIZE, event->edges);
 }
 
-static void xdg_toplevel_request_maximize(struct wl_listener *listener, void *data)
+static void handle_xdg_toplevel_request_maximize(struct wl_listener *listener, void *data)
 {
 	spider_dbg("MAXIMIZE is requested\n");
 	struct spider_view *view = wl_container_of(listener, view, request_maximize);
 	wlr_xdg_toplevel_set_maximized(view->xdg_surface, true);
 }
 
-static void xdg_toplevel_request_minimize(struct wl_listener *listener, void *data)
+static void handle_xdg_toplevel_request_minimize(struct wl_listener *listener, void *data)
 {
 	spider_dbg("MINIMIZE is requested\n");
 }
 
-static void xdg_toplevel_request_fullscreen(struct wl_listener *listener, void *data)
+static void handle_xdg_toplevel_request_fullscreen(struct wl_listener *listener, void *data)
 {
 	spider_dbg("FULLSCREEN is requested\n");
 	struct spider_view *view = wl_container_of(listener, view, request_fullscreen);
 	wlr_xdg_toplevel_set_fullscreen(view->xdg_surface, true);
 }
 
-void new_xdg_surface(struct wl_listener *listener, void *data)
+void handle_new_xdg_surface(struct wl_listener *listener, void *data)
 {
 	/* This event is raised when wlr_xdg_shell receives a new xdg surface from a
 	 * client, either a toplevel (application window) or popup. */
@@ -136,24 +136,24 @@ void new_xdg_surface(struct wl_listener *listener, void *data)
 	view->layer = LAYER_NONE;
 
 	/* Listen to the various events it can emit */
-	view->map.notify = xdg_surface_map;
+	view->map.notify = handle_xdg_surface_map;
 	wl_signal_add(&xdg_surface->events.map, &view->map);
-	view->unmap.notify = xdg_surface_unmap;
+	view->unmap.notify = handle_xdg_surface_unmap;
 	wl_signal_add(&xdg_surface->events.unmap, &view->unmap);
-	view->destroy.notify = xdg_surface_destroy;
+	view->destroy.notify = handle_xdg_surface_destroy;
 	wl_signal_add(&xdg_surface->events.destroy, &view->destroy);
 
 	/* cotd */
 	struct wlr_xdg_toplevel *toplevel = xdg_surface->toplevel;
-	view->request_move.notify = xdg_toplevel_request_move;
+	view->request_move.notify = handle_xdg_toplevel_request_move;
 	wl_signal_add(&toplevel->events.request_move, &view->request_move);
-	view->request_resize.notify = xdg_toplevel_request_resize;
+	view->request_resize.notify = handle_xdg_toplevel_request_resize;
 	wl_signal_add(&toplevel->events.request_resize, &view->request_resize);
-	view->request_maximize.notify = xdg_toplevel_request_maximize;
+	view->request_maximize.notify = handle_xdg_toplevel_request_maximize;
 	wl_signal_add(&toplevel->events.request_maximize, &view->request_maximize);
-	view->request_minimize.notify = xdg_toplevel_request_minimize;
+	view->request_minimize.notify = handle_xdg_toplevel_request_minimize;
 	wl_signal_add(&toplevel->events.request_minimize, &view->request_minimize);
-	view->request_fullscreen.notify = xdg_toplevel_request_fullscreen;
+	view->request_fullscreen.notify = handle_xdg_toplevel_request_fullscreen;
 	wl_signal_add(&toplevel->events.request_fullscreen, &view->request_fullscreen);
 
 	/* Add it to the list of views. */

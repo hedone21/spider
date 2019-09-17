@@ -18,22 +18,11 @@
  * SOFTWARE.
  */
 
-#ifndef __SPIDER_LAYER_H__
-#define __SPIDER_LAYER_H__
+#ifndef __SPIDER_SPIDER_INPUT_H__
+#define __SPIDER_SPIDER_INPUT_H__
 
 #include <wayland-server.h>
 
-enum layer_position {
-	LAYER_BACKGROUND,
-	LAYER_BOTTOM,
-	LAYER_TOP,
-	LAYER_OVERLAY,
-
-	LAYER_NONE,
-
-	MAX_LAYER_POSITION,
-};
-
-void handle_layer_shell_surface(struct wl_listener *listener, void *data);
+void handle_new_input(struct wl_listener *listener, void *data);
 
 #endif

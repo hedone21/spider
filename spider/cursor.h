@@ -27,6 +27,6 @@
 
 #include "spider/desktop.h"
 
-int spider_create_cursor(struct spider_desktop *desktop);
+int create_cursor(struct spider_desktop *desktop);
 
 #endif

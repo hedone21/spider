@@ -18,22 +18,20 @@
  * SOFTWARE.
  */
 
-#ifndef __SPIDER_LAYER_H__
-#define __SPIDER_LAYER_H__
+#include "spider/layer.h"
+#include "spider/desktop.h"
+#include "common/log.h"
 
-#include <wayland-server.h>
-
-enum layer_position {
-	LAYER_BACKGROUND,
-	LAYER_BOTTOM,
-	LAYER_TOP,
-	LAYER_OVERLAY,
-
-	LAYER_NONE,
-
-	MAX_LAYER_POSITION,
-};
-
-void handle_layer_shell_surface(struct wl_listener *listener, void *data);
-
-#endif
+void handle_layer_shell_surface(struct wl_listener *listener, void *data)
+{
+	struct wlr_layer_surface_v1 *layer_surface = data;
+	spider_dbg("new layer surface: namespace %s layer %d anchor %d "
+			"size %dx%d margin %d,%d,%d,%d",
+			layer_surface->namespace, layer_surface->layer, layer_surface->layer,
+			layer_surface->client_pending.desired_width,
+			layer_surface->client_pending.desired_height,
+			layer_surface->client_pending.margin.top,
+			layer_surface->client_pending.margin.right,
+			layer_surface->client_pending.margin.bottom,
+			layer_surface->client_pending.margin.left);
+}

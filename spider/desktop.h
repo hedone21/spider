@@ -129,7 +129,7 @@ struct spider_keyboard {
 	struct wl_listener key;
 };
 
-int spider_preinit_desktop();
-int spider_init_desktop();
+int preinit_desktop();
+int init_desktop();
 
 #endif /* __SERVER_H__ */

@@ -196,7 +196,7 @@ static void desktop_cursor_frame(struct wl_listener *listener, void *data) {
 	wlr_seat_pointer_notify_frame(desktop->seat);
 }
 
-int spider_create_cursor(struct spider_desktop *desktop)
+int create_cursor(struct spider_desktop *desktop)
 {
 	/*
 	 * Creates a cursor, which is a wlroots utility for tracking the cursor

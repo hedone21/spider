@@ -24,6 +24,6 @@
 #include <wayland-server.h>
 #include <wlr/types/wlr_xdg_shell.h>
 
-void new_xdg_surface(struct wl_listener *listener, void *data);
+void handle_new_xdg_surface(struct wl_listener *listener, void *data);
 
 #endif

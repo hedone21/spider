@@ -1,8 +1,4 @@
 /*
- * Copyright (c) 2014 Jari Vetoniemi
- * Copyright (c) 2017, 2018 Drew DeVault
- * Copyright (c) 2019 Minyoung.Go <hedone21@gmail.com>
- * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -30,203 +26,20 @@
 #include <time.h>
 #include <unistd.h>
 #include "spider/desktop.h"
-#include "spider/xdg_shell.h"
 #include "spider/cursor.h"
+#include "spider/input.h"
 #include "spider/launcher.h"
 #include "spider/layer.h"
+#include "spider/seat.h"
 #include "spider/view.h"
+#include "spider/xdg_shell.h"
 #include "common/log.h"
 #include "common/global_vars.h"
 #include "protocol/spider-desktop-manager-v1-protocol.h"
 
 static struct spider_desktop *desktop;
 
-static void keyboard_handle_modifiers(
-		struct wl_listener *listener, void *data) {
-	/* This event is raised when a modifier key, such as shift or alt, is
-	 * pressed. We simply communicate this to the client. */
-	struct spider_keyboard *keyboard =
-		wl_container_of(listener, keyboard, modifiers);
-	/*
-	 * A seat can only have one keyboard, but this is a limitation of the
-	 * Wayland protocol - not wlroots. We assign all connected keyboards to the
-	 * same seat. You can swap out the underlying wlr_keyboard like this and
-	 * wlr_seat handles this transparently.
-	 */
-	wlr_seat_set_keyboard(keyboard->desktop->seat, keyboard->device);
-	/* Send modifiers to the client. */
-	wlr_seat_keyboard_notify_modifiers(keyboard->desktop->seat,
-			&keyboard->device->keyboard->modifiers);
-}
-
-static bool handle_keybinding(struct spider_desktop *desktop, xkb_keysym_t sym) {
-	/*
-	 * Here we handle desktop keybindings. This is when the desktop is
-	 * processing keys, rather than passing them on to the client for its own
-	 * processing.
-	 *
-	 * This function assumes Alt is held down.
-	 */
-	switch (sym) {
-		case XKB_KEY_Escape:
-			wl_display_terminate(desktop->wl_display);
-			kill(desktop->client_server_pid, SIGKILL);
-			kill(desktop->client_shell_pid, SIGKILL);
-			break;
-		case XKB_KEY_F1:
-			/* Cycle to the next view */
-			if (wl_list_length(&desktop->views) < 2) {
-				break;
-			}
-			struct spider_view *current_view = wl_container_of(
-					desktop->views.next, current_view, link);
-			struct spider_view *next_view = wl_container_of(
-					current_view->link.next, next_view, link);
-			focus_view(next_view, next_view->xdg_surface->surface);
-			/* Move the previous view to the end of the list */
-			wl_list_remove(&current_view->link);
-			wl_list_insert(desktop->views.prev, &current_view->link);
-			break;
-		default:
-			return false;
-	}
-	return true;
-}
-
-static void keyboard_handle_key(
-		struct wl_listener *listener, void *data) {
-	/* This event is raised when a key is pressed or released. */
-	struct spider_keyboard *keyboard =
-		wl_container_of(listener, keyboard, key);
-	struct spider_desktop *desktop = keyboard->desktop;
-	struct wlr_event_keyboard_key *event = data;
-	struct wlr_seat *seat = desktop->seat;
-
-	/* Translate libinput keycode -> xkbcommon */
-	uint32_t keycode = event->keycode + 8;
-	/* Get a list of keysyms based on the keymap for this keyboard */
-	const xkb_keysym_t *syms;
-	int nsyms = xkb_state_key_get_syms(
-			keyboard->device->keyboard->xkb_state, keycode, &syms);
-
-	bool handled = false;
-	uint32_t modifiers = wlr_keyboard_get_modifiers(keyboard->device->keyboard);
-	if ((modifiers & WLR_MODIFIER_ALT) && event->state == WLR_KEY_PRESSED) {
-		/* If alt is held down and this button was _pressed_, we attempt to
-		 * process it as a desktop keybinding. */
-		for (int i = 0; i < nsyms; i++) {
-			handled = handle_keybinding(desktop, syms[i]);
-		}
-	}
-
-	if (!handled) {
-		/* Otherwise, we pass it along to the client. */
-		wlr_seat_set_keyboard(seat, keyboard->device);
-		wlr_seat_keyboard_notify_key(seat, event->time_msec,
-				event->keycode, event->state);
-	}
-}
-
-static void desktop_new_keyboard(struct spider_desktop *desktop,
-		struct wlr_input_device *device) {
-	struct spider_keyboard *keyboard =
-		calloc(1, sizeof(struct spider_keyboard));
-	keyboard->desktop = desktop;
-	keyboard->device = device;
-
-	/* We need to prepare an XKB keymap and assign it to the keyboard. This
-	 * assumes the defaults (e.g. layout = "us"). */
-	struct xkb_rule_names rules = { 0 };
-	struct xkb_context *context = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
-	struct xkb_keymap *keymap = xkb_map_new_from_names(context, &rules,
-			XKB_KEYMAP_COMPILE_NO_FLAGS);
-
-	wlr_keyboard_set_keymap(device->keyboard, keymap);
-	xkb_keymap_unref(keymap);
-	xkb_context_unref(context);
-	wlr_keyboard_set_repeat_info(device->keyboard, 25, 600);
-
-	/* Here we set up listeners for keyboard events. */
-	keyboard->modifiers.notify = keyboard_handle_modifiers;
-	wl_signal_add(&device->keyboard->events.modifiers, &keyboard->modifiers);
-	keyboard->key.notify = keyboard_handle_key;
-	wl_signal_add(&device->keyboard->events.key, &keyboard->key);
-
-	wlr_seat_set_keyboard(desktop->seat, device);
-
-	/* And add the keyboard to our list of keyboards */
-	wl_list_insert(&desktop->keyboards, &keyboard->link);
-}
-
-static void desktop_new_pointer(struct spider_desktop *desktop,
-		struct wlr_input_device *device) {
-	/* We don't do anything special with pointers. All of our pointer handling
-	 * is proxied through wlr_cursor. On another desktop, you might take this
-	 * opportunity to do libinput configuration on the device to set
-	 * acceleration, etc. */
-	wlr_cursor_attach_input_device(desktop->cursor, device);
-}
-
-static void desktop_new_input(struct wl_listener *listener, void *data) {
-	/* This event is raised by the backend when a new input device becomes
-	 * available. */
-	struct spider_desktop *desktop =
-		wl_container_of(listener, desktop, new_input);
-	struct wlr_input_device *device = data;
-	switch (device->type) {
-		case WLR_INPUT_DEVICE_KEYBOARD:
-			desktop_new_keyboard(desktop, device);
-			break;
-		case WLR_INPUT_DEVICE_POINTER:
-			desktop_new_pointer(desktop, device);
-			break;
-		default:
-			break;
-	}
-	/* We need to let the wlr_seat know what our capabilities are, which is
-	 * communiciated to the client. In TinyWL we always have a cursor, even if
-	 * there are no pointer devices, so we always include that capability. */
-	uint32_t caps = WL_SEAT_CAPABILITY_POINTER;
-	if (!wl_list_empty(&desktop->keyboards)) {
-		caps |= WL_SEAT_CAPABILITY_KEYBOARD;
-	}
-	wlr_seat_set_capabilities(desktop->seat, caps);
-}
-
-static void seat_request_cursor(struct wl_listener *listener, void *data) {
-	struct spider_desktop *desktop = wl_container_of(
-			listener, desktop, request_cursor);
-	/* This event is rasied by the seat when a client provides a cursor image */
-	struct wlr_seat_pointer_request_set_cursor_event *event = data;
-	struct wlr_seat_client *focused_client =
-		desktop->seat->pointer_state.focused_client;
-	/* This can be sent by any client, so we check to make sure this one is
-	 * actually has pointer focus first. */
-	if (focused_client == event->seat_client) {
-		/* Once we've vetted the client, we can tell the cursor to use the
-		 * provided surface as the cursor image. It will set the hardware cursor
-		 * on the output that it's currently on and continue to do so as the
-		 * cursor moves between outputs. */
-		wlr_cursor_set_surface(desktop->cursor, event->surface,
-				event->hotspot_x, event->hotspot_y);
-	}
-}
-
-static void handle_layer_shell_surface(struct wl_listener *listener, void *data)
-{
-	struct wlr_layer_surface_v1 *layer_surface = data;
-	spider_dbg("new layer surface: namespace %s layer %d anchor %d "
-			"size %dx%d margin %d,%d,%d,%d",
-			layer_surface->namespace, layer_surface->layer, layer_surface->layer,
-			layer_surface->client_pending.desired_width,
-			layer_surface->client_pending.desired_height,
-			layer_surface->client_pending.margin.top,
-			layer_surface->client_pending.margin.right,
-			layer_surface->client_pending.margin.bottom,
-			layer_surface->client_pending.margin.left);
-}
-
-int spider_preinit_desktop()
+int preinit_desktop()
 {
 	desktop = calloc(1, sizeof(*desktop));
 	if (desktop == NULL) {
@@ -255,7 +68,7 @@ int spider_preinit_desktop()
 	return 0;
 }
 
-static void spider_desktop_set_background(struct wl_client *client,
+static void set_background(struct wl_client *client,
 		struct wl_resource *resource,
 		struct wl_resource *surface)
 {
@@ -276,7 +89,7 @@ static void spider_desktop_set_background(struct wl_client *client,
 }
 
 static const struct spider_desktop_manager_v1_interface spider_desktop_implementation = {
-	.set_background = spider_desktop_set_background,
+	.set_background = set_background,
 };
 
 static void bind_spider_desktop(struct wl_client *client,
@@ -306,7 +119,7 @@ static void register_spider_desktop_interface(struct spider_desktop *desktop)
 	spider_dbg("register spider desktop interfaces\n");
 }
 
-int spider_init_desktop()
+int init_desktop()
 {
 	int child_pid;
 
@@ -345,7 +158,7 @@ int spider_init_desktop()
 	*/
 
 	desktop->xdg_shell = wlr_xdg_shell_create(desktop->wl_display);
-	desktop->new_xdg_surface.notify = new_xdg_surface;
+	desktop->new_xdg_surface.notify = handle_new_xdg_surface;
 	wl_signal_add(&desktop->xdg_shell->events.new_surface,
 			&desktop->new_xdg_surface);
 
@@ -354,14 +167,15 @@ int spider_init_desktop()
 	wl_signal_add(&desktop->layer_shell->events.new_surface,
 			&desktop->layer_shell_surface);
 
-	spider_create_cursor(desktop);
+	create_cursor(desktop);
 
 
 	wl_list_init(&desktop->keyboards);
-	desktop->new_input.notify = desktop_new_input;
+	desktop->new_input.notify = handle_new_input;
 	wl_signal_add(&desktop->backend->events.new_input, &desktop->new_input);
+
 	desktop->seat = wlr_seat_create(desktop->wl_display, "seat0");
-	desktop->request_cursor.notify = seat_request_cursor;
+	desktop->request_cursor.notify = handle_seat_request_cursor;
 	wl_signal_add(&desktop->seat->events.request_set_cursor,
 			&desktop->request_cursor);
 
@@ -406,7 +220,7 @@ int spider_init_desktop()
 
 	desktop->wl_event_loop = wl_display_get_event_loop(desktop->wl_display);
 	if (g_options.shell) {
-		wl_event_loop_add_idle(desktop->wl_event_loop, spider_launch_client, desktop);
+		wl_event_loop_add_idle(desktop->wl_event_loop, launch_client, desktop);
 	}
 
 	if (g_options.panel) {
@@ -427,8 +241,7 @@ int spider_init_desktop()
 	 * desktop. Starting the backend rigged up all of the necessary event
 	 * loop configuration to listen to libinput events, DRM events, generate
 	 * frame events at the refresh rate, and so on. */
-	wlr_log(WLR_INFO, "Running Wayland desktop on WAYLAND_DISPLAY=%s",
-			socket);
+	spider_log("Running Wayland desktop on WAYLAND_DISPLAY=%s\n", socket);
 	wl_display_run(desktop->wl_display);
 
 	/* Once wl_display_run returns, we shut down the desktop. */

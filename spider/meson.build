@@ -1,11 +1,14 @@
 compositor_src = [
   'main.c',
-  'desktop.c',
-  'xdg_shell.c',
-  'output.c',
   'cursor.c',
+  'desktop.c',
+  'input.c',
   'launcher.c',
+  'layer.c',
+  'output.c',
+  'seat.c',
   'view.c',
+  'xdg_shell.c',
   ]
 
 compositor_dep = [
