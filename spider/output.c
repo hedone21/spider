@@ -41,7 +41,7 @@ static void render_surface(struct wlr_surface *surface,	int sx, int sy, void *da
 	double ox = 0, oy = 0;
 	wlr_output_layout_output_coords(
 			view->desktop->output_layout, output, &ox, &oy);
-	ox += view->x + sx, oy += view->y + sy;
+	ox += view->box.x + sx, oy += view->box.y + sy;
 
 	struct wlr_box box = {
 		.x = ox * output->scale,

@@ -21,6 +21,41 @@
 #include "spider/layer.h"
 #include "spider/view.h"
 
+static struct wlr_output *get_output_from_view(struct spider_view *view)
+{
+	double output_x, output_y;
+
+	wlr_output_layout_closest_point(view->desktop->output_layout, NULL,
+			view->box.x + (double)view->box.width/2,
+			view->box.y + (double)view->box.height/2,
+			&output_x, &output_y);
+
+	return wlr_output_layout_output_at(view->desktop->output_layout, output_x, output_y);
+}
+
+void maximize_view(struct spider_view *view, bool maximized)
+{
+	if (view->maximized == maximized)
+		return;
+
+	wlr_xdg_toplevel_set_maximized(view->xdg_surface, true); 
+
+	if (!view->maximized && maximized) {
+		view->maximized = true;
+		view->saved.x = view->box.x;
+		view->saved.y = view->box.y;
+		view->saved.width = view->box.width;
+		view->saved.height = view->box.height;
+
+		struct wlr_output *output = get_output_from_view(view);
+		struct wlr_box *output_box = wlr_output_layout_get_box(view->desktop->output_layout, output);
+
+		wlr_xdg_toplevel_set_size(view->xdg_surface, output_box->width, output_box->height);
+	}
+
+
+}
+
 void focus_view(struct spider_view *view, struct wlr_surface *surface)
 {
 	/* Note: this function only deals with keyboard focus. */
@@ -74,8 +109,8 @@ static bool view_at(struct spider_view *view,
 	 * surface pointer to that wlr_surface and the sx and sy coordinates to the
 	 * coordinates relative to that surface's top-left corner.
 	 */
-	double view_sx = lx - view->x;
-	double view_sy = ly - view->y;
+	double view_sx = lx - view->box.x;
+	double view_sy = ly - view->box.y;
 
 	struct wlr_surface_state *state = &view->xdg_surface->surface->current;
 
@@ -108,4 +143,3 @@ struct spider_view *desktop_view_at(
 	}
 	return NULL;
 }
-

@@ -28,8 +28,8 @@
 
 static void process_cursor_move(struct spider_desktop *desktop, uint32_t time) {
 	/* Move the grabbed view to the new position. */
-	desktop->grabbed_view->x = desktop->cursor->x - desktop->grab_x;
-	desktop->grabbed_view->y = desktop->cursor->y - desktop->grab_y;
+	desktop->grabbed_view->box.x = desktop->cursor->x - desktop->grab_x;
+	desktop->grabbed_view->box.y = desktop->cursor->y - desktop->grab_y;
 }
 
 static void process_cursor_resize(struct spider_desktop *desktop, uint32_t time) {
@@ -46,8 +46,8 @@ static void process_cursor_resize(struct spider_desktop *desktop, uint32_t time)
 	struct spider_view *view = desktop->grabbed_view;
 	double dx = desktop->cursor->x - desktop->grab_x;
 	double dy = desktop->cursor->y - desktop->grab_y;
-	double x = view->x;
-	double y = view->y;
+	double x = view->box.x;
+	double y = view->box.y;
 	int width = desktop->grab_width;
 	int height = desktop->grab_height;
 	if (desktop->resize_edges & WLR_EDGE_TOP) {
@@ -68,8 +68,10 @@ static void process_cursor_resize(struct spider_desktop *desktop, uint32_t time)
 	} else if (desktop->resize_edges & WLR_EDGE_RIGHT) {
 		width += dx;
 	}
-	view->x = x;
-	view->y = y;
+	view->box.x = x;
+	view->box.y = y;
+	view->box.width = width;
+	view->box.height = height;
 	wlr_xdg_toplevel_set_size(view->xdg_surface, width, height);
 }
 

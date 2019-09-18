@@ -39,6 +39,7 @@
 #include <wlr/types/wlr_seat.h>
 #include <wlr/types/wlr_xcursor_manager.h>
 #include <wlr/types/wlr_xdg_shell.h>
+#include <wlr/types/wlr_xdg_shell_v6.h>
 #include <wlr/types/wlr_layer_shell_v1.h>
 /* TODO: Unstable wayland interfaces
 #include <wlr/types/wlr_xdg_output_v6.h>

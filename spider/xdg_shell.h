@@ -18,8 +18,8 @@
  * SOFTWARE.
  */
 
-#ifndef __SPIDER_XDG_SHELL_H__
-#define __SPIDER_XDG_SHELL_H__
+#ifndef __SPIDER_SPIDER_XDG_SHELL_H__
+#define __SPIDER_SPIDER_XDG_SHELL_H__
 
 #include <wayland-server.h>
 #include <wlr/types/wlr_xdg_shell.h>

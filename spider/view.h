@@ -35,11 +35,21 @@ struct spider_view {
 	struct wl_listener request_maximize;
 	struct wl_listener request_minimize;
 	struct wl_listener request_fullscreen;
+	struct wlr_box box;
 	int layer;
 	bool mapped;
-	int x, y;
+
+	struct {
+		double x, y;
+		uint32_t width, height;
+	}saved;
+
+	bool maximized;
+	bool minimized;
+	bool is_fullscreen;
 };
 
+void maximize_view(struct spider_view *view, bool maximized);
 void focus_view(struct spider_view *view, struct wlr_surface *surface);
 struct spider_view *desktop_view_at(struct spider_desktop *desktop, 
 		double lx, double ly, struct wlr_surface **surface, 
