@@ -77,13 +77,11 @@ static void begin_interactive(struct spider_view *view,	enum spider_cursor_mode 
 
 static void handle_xdg_toplevel_request_move(struct wl_listener *listener, void *data)
 {
-	/* This event is raised when a client would like to begin an interactive
-	 * move, typically because the user clicked on their client-side
-	 * decorations. Note that a more sophisticated desktop should check the
-	 * provied serial against a list of button press serials sent to this
-	 * client, to prevent the client from requesting this whenever they want. */
 	struct spider_view *view = wl_container_of(listener, view, request_move);
+	spider_dbg("Toplevel Request Move\n");
 	begin_interactive(view, SPIDER_CURSOR_MOVE, 0);
+	if (view->maximized)
+		maximize_view(view, false);
 }
 
 static void handle_xdg_toplevel_request_resize(struct wl_listener *listener, void *data)
