@@ -50,6 +50,11 @@ void maximize_view(struct spider_view *view, bool maximized)
 		struct wlr_output *output = get_output_from_view(view);
 		struct wlr_box *output_box = wlr_output_layout_get_box(view->desktop->output_layout, output);
 
+		view->box.x = output_box->x;
+		view->box.y = output_box->y;
+		view->box.width = output_box->width;
+		view->box.height = output_box->height;
+
 		wlr_xdg_toplevel_set_size(view->xdg_surface, output_box->width, output_box->height);
 	}else if (view->maximized && !maximized) {
 		view->maximized = false;
