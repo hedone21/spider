@@ -38,7 +38,7 @@ void maximize_view(struct spider_view *view, bool maximized)
 	if (view->maximized == maximized)
 		return;
 
-	wlr_xdg_toplevel_set_maximized(view->xdg_surface, true); 
+	wlr_xdg_toplevel_set_maximized(view->xdg_surface, maximized); 
 
 	if (!view->maximized && maximized) {
 		view->maximized = true;
@@ -51,9 +51,15 @@ void maximize_view(struct spider_view *view, bool maximized)
 		struct wlr_box *output_box = wlr_output_layout_get_box(view->desktop->output_layout, output);
 
 		wlr_xdg_toplevel_set_size(view->xdg_surface, output_box->width, output_box->height);
+	}else if (view->maximized && !maximized) {
+		view->maximized = false;
+		view->box.x = view->saved.x;
+		view->box.y = view->saved.y;
+		view->box.width = view->saved.width;
+		view->box.height = view->saved.height;
+
+		wlr_xdg_toplevel_set_size(view->xdg_surface, view->box.width, view->box.height);
 	}
-
-
 }
 
 void focus_view(struct spider_view *view, struct wlr_surface *surface)

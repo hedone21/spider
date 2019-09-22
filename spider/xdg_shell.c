@@ -102,8 +102,14 @@ static void handle_xdg_toplevel_request_maximize(struct wl_listener *listener, v
 {
 	spider_dbg("MAXIMIZE is requested\n");
 	struct spider_view *view = wl_container_of(listener, view, request_maximize);
-	wlr_xdg_toplevel_set_maximized(view->xdg_surface, true);
-	maximize_view(view, true);
+
+	if (view->maximized == false) {
+		wlr_xdg_toplevel_set_maximized(view->xdg_surface, true);
+		maximize_view(view, true);
+	}else {
+		wlr_xdg_toplevel_set_maximized(view->xdg_surface, false);
+		maximize_view(view, false);
+	}
 }
 
 static void handle_xdg_toplevel_request_minimize(struct wl_listener *listener, void *data)
