@@ -1,7 +1,4 @@
 /*
- * Copyright (c) 2019 Minyoung.Go <hedone21@gmail.com>
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
@@ -20,31 +17,24 @@
  * SOFTWARE.
  */
 
-#ifndef __SPIDER_OUTPUT_H__
-#define __SPIDER_OUTPUT_H__
+#ifndef __SPIDER_COMMON_UTIL_H__
+#define __SPIDER_COMMON_UTIL_H__
 
 #include <wayland-server.h>
-#include <wlr/render/wlr_renderer.h>
-#include <wlr/types/wlr_output.h>
-#include <wlr/types/wlr_output_layout.h>
-#include <stdlib.h>
-#include "spider/desktop.h"
-#include "spider/layer.h"
-#include "common/util.h"
 
-struct spider_output {
-	struct spider_list link;
-	struct spider_desktop *desktop;
-	struct wlr_output *wlr_output;
+/* Wrapper code of wl_list */
+#define spider_list wl_list
+#define spider_list_init wl_list_init
+#define spider_list_insert wl_list_insert
+#define spider_list_remove wl_list_remove
+#define spider_list_length wl_list_length
+#define spider_list_empty wl_list_empty
+#define spider_list_insert_list wl_list_insert_list
+#define spider_list_for_each wl_list_for_each
+#define spider_list_for_each_safe wl_list_for_each_safe
+#define spider_list_for_each_reverse wl_list_for_each_reverse
+#define spider_list_for_each_reverse_safe wl_list_for_each_reverse_safe
 
-	struct wl_listener frame;
-	struct wl_listener destroy;
-	struct wl_listener enable;
-	struct wl_listener mode;
-	struct wl_listener transform;
-	struct wl_listener present;
-};
-
-void handle_new_output(struct wl_listener *listener, void *data);
+void spider_list_insert_tail(struct wl_list *list, struct wl_list *elm);
 
 #endif

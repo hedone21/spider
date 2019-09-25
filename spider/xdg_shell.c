@@ -43,7 +43,7 @@ static void handle_xdg_surface_destroy(struct wl_listener *listener, void *data)
 {
 	/* Called when the surface is destroyed and should never be shown again. */
 	struct spider_view *view = wl_container_of(listener, view, destroy);
-	wl_list_remove(&view->link);
+	spider_list_remove(&view->link);
 	free(view);
 }
 
@@ -138,7 +138,7 @@ void handle_new_xdg_surface(struct wl_listener *listener, void *data)
 		calloc(1, sizeof(struct spider_view));
 	view->desktop = desktop;
 	view->xdg_surface = xdg_surface;
-	view->layer = LAYER_NONE;
+	view->layer = LAYER_TOP;
 
 	/* Listen to the various events it can emit */
 	view->map.notify = handle_xdg_surface_map;
@@ -162,5 +162,5 @@ void handle_new_xdg_surface(struct wl_listener *listener, void *data)
 	wl_signal_add(&toplevel->events.request_fullscreen, &view->request_fullscreen);
 
 	/* Add it to the list of views. */
-	wl_list_insert(&desktop->views, &view->link);
+	spider_list_insert(&desktop->views, &view->link);
 }

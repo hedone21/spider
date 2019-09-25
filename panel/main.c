@@ -34,6 +34,13 @@ static void set_panelsize(struct spider_panel *panel, int portion)
 	panel->panel_height = gdk_screen_get_height(screen) * portion / 100;
 }
 
+static void map_win_cb(GtkWidget* widget, gpointer data)
+{
+	struct spider_panel *panel = data;
+
+	spider_desktop_manager_v1_set_bar(panel->desktop_manager, panel->surface, 0, 0);
+}
+
 static void destroy_win_cb(GtkWidget* widget, GtkWidget* window)
 {
 	gtk_main_quit();
@@ -66,6 +73,7 @@ int main(int argc, char *argv[])
 	panel.panel = WEBKIT_WEB_VIEW(webkit_web_view_new());
 	gtk_container_add(GTK_CONTAINER(panel.window), GTK_WIDGET(panel.panel));
 
+	g_signal_connect(panel.window, "map", G_CALLBACK(map_win_cb), &panel);
 	g_signal_connect(panel.window, "destroy", G_CALLBACK(destroy_win_cb), NULL);
 
 	/*
@@ -77,10 +85,10 @@ int main(int argc, char *argv[])
 
 	gtk_widget_set_app_paintable (panel.window, TRUE);
 
-	gtk_widget_show_all(panel.window);
+	gdk_window = gtk_widget_get_window(panel.window);
+	panel.surface = gdk_wayland_window_get_wl_surface(gdk_window);
 
-	/* TODO: do busy waiting for loading spider-shell */
-	sleep(2);
+	gtk_widget_show_all(panel.window);
 
 	gtk_main();
 

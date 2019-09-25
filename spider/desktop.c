@@ -33,8 +33,9 @@
 #include "spider/seat.h"
 #include "spider/view.h"
 #include "spider/xdg_shell.h"
-#include "common/log.h"
 #include "common/global_vars.h"
+#include "common/log.h"
+#include "common/util.h"
 #include "protocol/spider-desktop-manager-v1-protocol.h"
 
 static struct spider_desktop *desktop;
@@ -73,23 +74,50 @@ static void set_background(struct wl_client *client,
 		struct wl_resource *surface)
 {
 	struct wlr_surface *wlr_surface = wlr_surface_from_resource(surface);
-	static bool is_background_set = false;
-
-	if (is_background_set)
-		return;
 
 	struct spider_view *view;
-	wl_list_for_each(view, &desktop->views, link) {
+	spider_list_for_each(view, &desktop->views, link) {
 		if (view->xdg_surface->surface == wlr_surface) {
 			spider_dbg("set background %p / %p\n", view, wlr_surface);
 			view->layer = LAYER_BACKGROUND;
-			is_background_set = true;
+		}
+	}
+}
+
+static void set_bar(struct wl_client *client,
+		struct wl_resource *resource,
+		struct wl_resource *surface,
+		uint32_t bar_type, uint32_t position)
+{
+	struct wlr_surface *wlr_surface = wlr_surface_from_resource(surface);
+	const char *type;
+	int layer;
+
+	switch (bar_type) {
+	case 0:
+		type = "status-bar";
+		layer = LAYER_STATUS_BAR;
+		break;
+	case 1:
+		type = "navigation-bar";
+		layer = LAYER_STATUS_BAR;
+		break;
+	default:
+		break;
+	}
+
+	struct spider_view *view;
+	spider_list_for_each(view, &desktop->views, link) {
+		if (view->xdg_surface->surface == wlr_surface) {
+			spider_dbg("set %s %p / %p\n", type, view, wlr_surface);
+			view->layer = LAYER_STATUS_BAR;
 		}
 	}
 }
 
 static const struct spider_desktop_manager_v1_interface spider_desktop_implementation = {
 	.set_background = set_background,
+	.set_bar = set_bar,
 };
 
 static void bind_spider_desktop(struct wl_client *client,
@@ -144,11 +172,11 @@ int init_desktop()
 	wl_signal_add(&desktop->layout->events.change, &desktop->layout_change);
 	*/
 
-	wl_list_init(&desktop->outputs);
+	spider_list_init(&desktop->outputs);
 	desktop->new_output.notify = handle_new_output;
 	wl_signal_add(&desktop->backend->events.new_output, &desktop->new_output);
 
-	wl_list_init(&desktop->views);
+	spider_list_init(&desktop->views);
 
 	/*
 	desktop->xdg_shell_v6 = wlr_xdg_shell_v6_create(server->wl_display);
@@ -170,7 +198,7 @@ int init_desktop()
 	create_cursor(desktop);
 
 
-	wl_list_init(&desktop->keyboards);
+	spider_list_init(&desktop->keyboards);
 	desktop->new_input.notify = handle_new_input;
 	wl_signal_add(&desktop->backend->events.new_input, &desktop->new_input);
 
@@ -219,23 +247,7 @@ int init_desktop()
 	}
 
 	desktop->wl_event_loop = wl_display_get_event_loop(desktop->wl_display);
-	if (g_options.shell) {
-		wl_event_loop_add_idle(desktop->wl_event_loop, launch_client, desktop);
-	}
-
-	if (g_options.panel) {
-		child_pid = fork();
-		if (child_pid == 0) {
-			spider_dbg("Launch panel [%s]\n", g_options.panel);
-			execl("/bin/sh", "/bin/sh", "-c", g_options.panel, (void *)NULL);
-			exit(-1);
-		}else if (child_pid < 0) {
-			spider_err("Failed to fork\n");
-			exit(-1);
-		}
-
-		desktop->client_server_pid = child_pid;
-	}
+	wl_event_loop_add_idle(desktop->wl_event_loop, launch_client, desktop);
 
 	/* Run the Wayland event loop. This does not return until you exit the
 	 * desktop. Starting the backend rigged up all of the necessary event

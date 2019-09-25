@@ -92,7 +92,7 @@ static void output_handle_frame(struct wl_listener *listener, void *data)
 
 
 	struct spider_view *view;
-	wl_list_for_each_reverse(view, &output->desktop->views, link) {
+	spider_list_for_each_reverse(view, &output->desktop->views, link) {
 		if (!view->mapped) {
 			continue;
 		}
@@ -172,7 +172,7 @@ void handle_new_output(struct wl_listener *listener, void *data)
 			wlr_output->model, wlr_output->serial, wlr_output->phys_width,
 			wlr_output->phys_height);
 
-	if (!wl_list_empty(&wlr_output->modes)) {
+	if (!spider_list_empty(&wlr_output->modes)) {
 		struct wlr_output_mode *mode =
 			wl_container_of(wlr_output->modes.prev, mode, link);
 		wlr_output_set_mode(wlr_output, mode);
@@ -183,7 +183,7 @@ void handle_new_output(struct wl_listener *listener, void *data)
 	output->wlr_output = wlr_output;
 	output->desktop = desktop;
 	wlr_output->data = output;
-	wl_list_insert(&desktop->outputs, &output->link);
+	spider_list_insert(&desktop->outputs, &output->link);
 
 	output->frame.notify = output_handle_frame;
 	wl_signal_add(&wlr_output->events.frame, &output->frame);

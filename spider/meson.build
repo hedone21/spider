@@ -29,6 +29,7 @@ compositor_exe = executable(
   xdg_shell_unstable_v6_protocol_h,
   wlr_layer_shell_unstable_v1_protocol_c,
   wlr_layer_shell_unstable_v1_protocol_h,
+  link_with: common_a,
   dependencies: compositor_dep,
   include_directories: include_directories('..'),
   name_prefix: '',

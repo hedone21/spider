@@ -20,6 +20,8 @@
 
 #include "spider/layer.h"
 #include "spider/view.h"
+#include "common/log.h"
+#include "common/util.h"
 
 static struct wlr_output *get_output_from_view(struct spider_view *view)
 {
@@ -67,6 +69,39 @@ void maximize_view(struct spider_view *view, bool maximized)
 	}
 }
 
+static void sort_views(struct spider_list *list)
+{
+
+}
+
+void set_view_layer(struct spider_view *view, enum layer_position layer)
+{
+	view->layer = layer;
+}
+
+void insert_view(struct spider_view *view)
+{
+	struct spider_desktop *desktop = view->desktop;
+	struct spider_view *pos;
+
+	spider_list_remove(&view->link);
+
+	spider_list_for_each(pos, &desktop->views, link) {
+		if (pos->layer > view->layer) {
+			if (pos->link.next != &desktop->views) {
+				continue;
+			}
+
+			spider_list_insert(&pos->link, &view->link);
+
+		}else {
+			spider_list_insert_tail(&pos->link, &view->link);
+		}
+
+		break;
+	}
+}
+
 void focus_view(struct spider_view *view, struct wlr_surface *surface)
 {
 	/* Note: this function only deals with keyboard focus. */
@@ -92,12 +127,9 @@ void focus_view(struct spider_view *view, struct wlr_surface *surface)
 		wlr_xdg_toplevel_set_activated(previous, false);
 	}
 	struct wlr_keyboard *keyboard = wlr_seat_get_keyboard(seat);
-	if (view->layer != LAYER_BACKGROUND ||
-			view->xdg_surface->toplevel->server_pending.activated) {
 		/* Move the view to the front */
-		wl_list_remove(&view->link);
-		wl_list_insert(&desktop->views, &view->link);
-	}
+		//spider_list_insert(&desktop->views, &view->link);
+		insert_view(view);
 	/* Activate the new surface */
 	wlr_xdg_toplevel_set_activated(view->xdg_surface, true);
 	/*
@@ -147,7 +179,7 @@ struct spider_view *desktop_view_at(
 	/* This iterates over all of our surfaces and attempts to find one under the
 	 * cursor. This relies on desktop->views being ordered from top-to-bottom. */
 	struct spider_view *view;
-	wl_list_for_each(view, &desktop->views, link) {
+	spider_list_for_each(view, &desktop->views, link) {
 		if (view_at(view, lx, ly, surface, sx, sy)) {
 			return view;
 		}

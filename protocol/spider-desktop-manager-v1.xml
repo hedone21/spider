@@ -29,5 +29,10 @@
     <request name="set_background">
       <arg name="surface" type="object" interface="wl_surface"/>
     </request>
+    <request name="set_bar">
+      <arg name="surface" type="object" interface="wl_surface"/>
+      <arg name="bar_type" type="uint"/>
+      <arg name="position" type="uint"/>
+    </request>
   </interface>
 </protocol>

@@ -1,10 +1,12 @@
 common_src = [
   'command.c',
+  'util.c',
   'webkitapi.c',
   ]
 
 common_dep = [
   gtk_dep,
+  wayland_server_dep,
   webkitgtk_dep,
   ]
 

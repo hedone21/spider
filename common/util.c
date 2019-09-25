@@ -18,42 +18,12 @@
  * SOFTWARE.
  */
 
-#ifndef __SPIDER_VIEW_H__
-#define __SPIDER_VIEW_H__
-
-#include "spider/desktop.h"
 #include "common/util.h"
 
-struct spider_view {
-	struct spider_list link;
-	struct spider_desktop *desktop;
-	struct wlr_xdg_surface *xdg_surface;
-	struct wl_listener map;
-	struct wl_listener unmap;
-	struct wl_listener destroy;
-	struct wl_listener request_move;
-	struct wl_listener request_resize;
-	struct wl_listener request_maximize;
-	struct wl_listener request_minimize;
-	struct wl_listener request_fullscreen;
-	struct wlr_box box;
-	int layer;
-	bool mapped;
-
-	struct {
-		double x, y;
-		uint32_t width, height;
-	}saved;
-
-	bool maximized;
-	bool minimized;
-	bool is_fullscreen;
-};
-
-void maximize_view(struct spider_view *view, bool maximized);
-void focus_view(struct spider_view *view, struct wlr_surface *surface);
-struct spider_view *desktop_view_at(struct spider_desktop *desktop, 
-		double lx, double ly, struct wlr_surface **surface, 
-		double *sx, double *sy);
-
-#endif
+void spider_list_insert_tail(struct spider_list *list, struct spider_list *elm)
+{
+	elm->prev = list->prev;
+	elm->next = list;
+	list->prev = elm;
+	elm->prev->next = elm;
+}

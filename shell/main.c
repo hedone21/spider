@@ -38,7 +38,7 @@ static void scale_fullscreen(int *screen_width, int *screen_height)
 	*screen_height = gdk_screen_get_height(screen);
 }
 
-static void draw_win_cb(GtkWidget* widget, cairo_t *cr, gpointer data)
+static void map_win_cb(GtkWidget* widget, gpointer data)
 {
 	struct spider_shell *shell = data;
 
@@ -79,7 +79,7 @@ int main(int argc, char* argv[])
 	web = WEBKIT_WEB_VIEW(webkit_web_view_new());
 	gtk_container_add(GTK_CONTAINER(window), GTK_WIDGET(web));
 
-	g_signal_connect(window, "draw", G_CALLBACK(draw_win_cb), &shell);
+	g_signal_connect(window, "map", G_CALLBACK(map_win_cb), &shell);
 	g_signal_connect(window, "destroy", G_CALLBACK(destroy_win_cb), NULL);
 	g_signal_connect(web, "decide-policy", G_CALLBACK(wkapi_dp_cb), window);
 	g_signal_connect(web, "submit-form", G_CALLBACK(wkapi_sf_cb), window);
@@ -97,6 +97,7 @@ int main(int argc, char* argv[])
 	//shell.xdg_surface = xdg_wm_base_get_xdg_surface(shell.wm_base, shell.surface);
 	spider_dbg("%p\n", shell.surface);
 
+	//spider_desktop_manager_v1_set_background(shell.desktop_manager, shell.surface);
 	gtk_widget_show_all(window);
 
 	gtk_main();

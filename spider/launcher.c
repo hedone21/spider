@@ -78,13 +78,9 @@ error:
 	return -1;
 }
 
-void launch_client(struct spider_desktop *desktop)
+static int fork_n_exec(const char *path, int *sv)
 {
 	int child_pid;
-	int fd;
-	int sv[2];
-
-	socketpair_cloexec(AF_UNIX, SOCK_STREAM, 0, sv);
 
 	child_pid = fork();
 	if (child_pid == 0) {
@@ -101,8 +97,8 @@ void launch_client(struct spider_desktop *desktop)
 		snprintf(s, sizeof s, "%d", clientfd);
 		setenv("WAYLAND_SOCKET", s, 1);
 
-		spider_dbg("Launch shell [%s]\n", g_options.shell);
-		fd = execl("/bin/sh", "/bin/sh", "-c", g_options.shell, (void *)NULL);
+		spider_dbg("Launch shell [%s]\n", path);
+		execl("/bin/sh", "/bin/sh", "-c", path, (void *)NULL);
 
 		exit(-1);
 	}else if (child_pid < 0) {
@@ -110,8 +106,24 @@ void launch_client(struct spider_desktop *desktop)
 		exit(-1);
 	}
 
-	desktop->client_shell_pid = child_pid;
+	return child_pid;
+}
 
+void launch_client(void *data)
+{
+	int sv[2];
+	int child_pid;
+	struct spider_desktop *desktop = data;
+
+	socketpair_cloexec(AF_UNIX, SOCK_STREAM, 0, sv);
+	child_pid = fork_n_exec(g_options.shell, sv);
+	desktop->client_shell_pid = child_pid;
+	close(sv[1]);
+	wl_client_create(desktop->wl_display, sv[0]);
+
+	socketpair_cloexec(AF_UNIX, SOCK_STREAM, 0, sv);
+	child_pid = fork_n_exec(g_options.panel, sv);
+	desktop->client_panel_pid = child_pid;
 	close(sv[1]);
 	wl_client_create(desktop->wl_display, sv[0]);
 }

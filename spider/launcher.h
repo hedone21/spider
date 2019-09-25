@@ -29,6 +29,6 @@
 #include <fcntl.h>
 #include "spider/desktop.h"
 
-void launch_client(struct spider_desktop *desktop);
+void launch_client(void *data);
 
 #endif

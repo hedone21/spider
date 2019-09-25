@@ -87,7 +87,7 @@ struct spider_desktop {
 
 	struct wlr_xdg_shell *xdg_shell;
 	struct wl_listener new_xdg_surface;
-	struct wl_list views;
+	struct spider_list views;
 
 	struct wlr_cursor *cursor;
 	struct wlr_xcursor_manager *cursor_mgr;
@@ -100,7 +100,7 @@ struct spider_desktop {
 	struct wlr_seat *seat;
 	struct wl_listener new_input;
 	struct wl_listener request_cursor;
-	struct wl_list keyboards;
+	struct spider_list keyboards;
 	enum spider_cursor_mode cursor_mode;
 	struct spider_view *grabbed_view;
 	double grab_x, grab_y;
@@ -108,11 +108,12 @@ struct spider_desktop {
 	uint32_t resize_edges;
 
 	struct wlr_output_layout *output_layout;
-	struct wl_list outputs;
+	struct spider_list outputs;
 	struct wl_listener new_output;
 
 	int client_server_pid;
 	int client_shell_pid;
+	int client_panel_pid;
 
 	/* Unstable Interface */
 	struct wlr_layer_shell_v1 *layer_shell;
@@ -122,7 +123,7 @@ struct spider_desktop {
 };
 
 struct spider_keyboard {
-	struct wl_list link;
+	struct spider_list link;
 	struct spider_desktop *desktop;
 	struct wlr_input_device *device;
 

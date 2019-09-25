@@ -57,7 +57,7 @@ static bool handle_keybinding(struct spider_desktop *desktop, xkb_keysym_t sym) 
 			break;
 		case XKB_KEY_F1:
 			/* Cycle to the next view */
-			if (wl_list_length(&desktop->views) < 2) {
+			if (spider_list_length(&desktop->views) < 2) {
 				break;
 			}
 			struct spider_view *current_view = wl_container_of(
@@ -66,8 +66,8 @@ static bool handle_keybinding(struct spider_desktop *desktop, xkb_keysym_t sym) 
 					current_view->link.next, next_view, link);
 			focus_view(next_view, next_view->xdg_surface->surface);
 			/* Move the previous view to the end of the list */
-			wl_list_remove(&current_view->link);
-			wl_list_insert(desktop->views.prev, &current_view->link);
+			spider_list_remove(&current_view->link);
+			spider_list_insert(desktop->views.prev, &current_view->link);
 			break;
 		default:
 			return false;
@@ -137,7 +137,7 @@ static void add_new_keyboard(struct spider_desktop *desktop, struct wlr_input_de
 	wlr_seat_set_keyboard(desktop->seat, device);
 
 	/* And add the keyboard to our list of keyboards */
-	wl_list_insert(&desktop->keyboards, &keyboard->link);
+	spider_list_insert(&desktop->keyboards, &keyboard->link);
 }
 
 static void add_new_pointer(struct spider_desktop *desktop, struct wlr_input_device *device)
@@ -170,7 +170,7 @@ void handle_new_input(struct wl_listener *listener, void *data)
 	 * communiciated to the client. In TinyWL we always have a cursor, even if
 	 * there are no pointer devices, so we always include that capability. */
 	uint32_t caps = WL_SEAT_CAPABILITY_POINTER;
-	if (!wl_list_empty(&desktop->keyboards)) {
+	if (!spider_list_empty(&desktop->keyboards)) {
 		caps |= WL_SEAT_CAPABILITY_KEYBOARD;
 	}
 	wlr_seat_set_capabilities(desktop->seat, caps);
