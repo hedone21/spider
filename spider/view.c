@@ -27,12 +27,12 @@ static struct wlr_output *get_output_from_view(struct spider_view *view)
 {
 	double output_x, output_y;
 
-	wlr_output_layout_closest_point(view->desktop->output_layout, NULL,
+	wlr_output_layout_closest_point(view->compositor->output_layout, NULL,
 			view->box.x + (double)view->box.width/2,
 			view->box.y + (double)view->box.height/2,
 			&output_x, &output_y);
 
-	return wlr_output_layout_output_at(view->desktop->output_layout, output_x, output_y);
+	return wlr_output_layout_output_at(view->compositor->output_layout, output_x, output_y);
 }
 
 void maximize_view(struct spider_view *view, bool maximized)
@@ -50,7 +50,7 @@ void maximize_view(struct spider_view *view, bool maximized)
 		view->saved.height = view->box.height;
 
 		struct wlr_output *output = get_output_from_view(view);
-		struct wlr_box *output_box = wlr_output_layout_get_box(view->desktop->output_layout, output);
+		struct wlr_box *output_box = wlr_output_layout_get_box(view->compositor->output_layout, output);
 
 		view->box.x = output_box->x;
 		view->box.y = output_box->y;
@@ -81,14 +81,14 @@ void set_view_layer(struct spider_view *view, enum layer_position layer)
 
 void insert_view(struct spider_view *view)
 {
-	struct spider_desktop *desktop = view->desktop;
+	struct spider_compositor *compositor = view->compositor;
 	struct spider_view *pos;
 
 	spider_list_remove(&view->link);
 
-	spider_list_for_each(pos, &desktop->views, link) {
+	spider_list_for_each(pos, &compositor->views, link) {
 		if (pos->layer > view->layer) {
-			if (pos->link.next != &desktop->views) {
+			if (pos->link.next != &compositor->views) {
 				continue;
 			}
 
@@ -105,8 +105,8 @@ void insert_view(struct spider_view *view)
 void focus_view(struct spider_view *view, struct wlr_surface *surface)
 {
 	/* Note: this function only deals with keyboard focus. */
-	struct spider_desktop *desktop = view->desktop;
-	struct wlr_seat *seat = desktop->seat;
+	struct spider_compositor *compositor = view->compositor;
+	struct wlr_seat *seat = compositor->seat;
 	struct wlr_surface *prev_surface = seat->keyboard_state.focused_surface;
 
 	if (view == NULL) {
@@ -128,7 +128,7 @@ void focus_view(struct spider_view *view, struct wlr_surface *surface)
 	}
 	struct wlr_keyboard *keyboard = wlr_seat_get_keyboard(seat);
 		/* Move the view to the front */
-		//spider_list_insert(&desktop->views, &view->link);
+		//spider_list_insert(&compositor->views, &view->link);
 		insert_view(view);
 	/* Activate the new surface */
 	wlr_xdg_toplevel_set_activated(view->xdg_surface, true);
@@ -172,14 +172,14 @@ static bool view_at(struct spider_view *view,
 	return false;
 }
 
-struct spider_view *desktop_view_at(
-		struct spider_desktop *desktop, double lx, double ly,
+struct spider_view *compositor_view_at(
+		struct spider_compositor *compositor, double lx, double ly,
 		struct wlr_surface **surface, double *sx, double *sy)
 {
 	/* This iterates over all of our surfaces and attempts to find one under the
-	 * cursor. This relies on desktop->views being ordered from top-to-bottom. */
+	 * cursor. This relies on compositor->views being ordered from top-to-bottom. */
 	struct spider_view *view;
-	spider_list_for_each(view, &desktop->views, link) {
+	spider_list_for_each(view, &compositor->views, link) {
 		if (view_at(view, lx, ly, surface, sx, sy)) {
 			return view;
 		}

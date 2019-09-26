@@ -38,7 +38,7 @@ static void map_win_cb(GtkWidget* widget, gpointer data)
 {
 	struct spider_panel *panel = data;
 
-	spider_desktop_manager_v1_set_bar(panel->desktop_manager, panel->surface, 0, 0);
+	spider_compositor_manager_v1_set_bar(panel->compositor_manager, panel->surface, 0, 0);
 }
 
 static void destroy_win_cb(GtkWidget* widget, GtkWidget* window)

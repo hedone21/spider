@@ -113,17 +113,17 @@ void launch_client(void *data)
 {
 	int sv[2];
 	int child_pid;
-	struct spider_desktop *desktop = data;
+	struct spider_compositor *compositor = data;
 
 	socketpair_cloexec(AF_UNIX, SOCK_STREAM, 0, sv);
 	child_pid = fork_n_exec(g_options.shell, sv);
-	desktop->client_shell_pid = child_pid;
+	compositor->client_shell_pid = child_pid;
 	close(sv[1]);
-	wl_client_create(desktop->wl_display, sv[0]);
+	wl_client_create(compositor->wl_display, sv[0]);
 
 	socketpair_cloexec(AF_UNIX, SOCK_STREAM, 0, sv);
 	child_pid = fork_n_exec(g_options.panel, sv);
-	desktop->client_panel_pid = child_pid;
+	compositor->client_panel_pid = child_pid;
 	close(sv[1]);
-	wl_client_create(desktop->wl_display, sv[0]);
+	wl_client_create(compositor->wl_display, sv[0]);
 }

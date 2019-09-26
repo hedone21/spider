@@ -18,7 +18,7 @@
  * SOFTWARE.
  */
 
-#include "spider/desktop.h"
+#include "spider/compositor.h"
 #include "spider/xdg_shell.h"
 #include "spider/view.h"
 #include "common/log.h"
@@ -50,29 +50,29 @@ static void handle_xdg_surface_destroy(struct wl_listener *listener, void *data)
 static void begin_interactive(struct spider_view *view,	enum spider_cursor_mode mode, uint32_t edges)
 {
 	/* This function sets up an interactive move or resize operation, where the
-	 * desktop stops propegating pointer events to clients and instead
+	 * compositor stops propegating pointer events to clients and instead
 	 * consumes them itself, to move or resize windows. */
-	struct spider_desktop *desktop = view->desktop;
+	struct spider_compositor *compositor = view->compositor;
 	struct wlr_surface *focused_surface =
-		desktop->seat->pointer_state.focused_surface;
+		compositor->seat->pointer_state.focused_surface;
 	if (view->xdg_surface->surface != focused_surface) {
 		/* Deny move/resize requests from unfocused clients. */
 		return;
 	}
-	desktop->grabbed_view = view;
-	desktop->cursor_mode = mode;
+	compositor->grabbed_view = view;
+	compositor->cursor_mode = mode;
 	struct wlr_box geo_box;
 	wlr_xdg_surface_get_geometry(view->xdg_surface, &geo_box);
 	if (mode == SPIDER_CURSOR_MOVE) {
-		desktop->grab_x = desktop->cursor->x - view->box.x;
-		desktop->grab_y = desktop->cursor->y - view->box.y;
+		compositor->grab_x = compositor->cursor->x - view->box.x;
+		compositor->grab_y = compositor->cursor->y - view->box.y;
 	} else {
-		desktop->grab_x = desktop->cursor->x + geo_box.x;
-		desktop->grab_y = desktop->cursor->y + geo_box.y;
+		compositor->grab_x = compositor->cursor->x + geo_box.x;
+		compositor->grab_y = compositor->cursor->y + geo_box.y;
 	}
-	desktop->grab_width = geo_box.width;
-	desktop->grab_height = geo_box.height;
-	desktop->resize_edges = edges;
+	compositor->grab_width = geo_box.width;
+	compositor->grab_height = geo_box.height;
+	compositor->resize_edges = edges;
 }
 
 static void handle_xdg_toplevel_request_move(struct wl_listener *listener, void *data)
@@ -88,7 +88,7 @@ static void handle_xdg_toplevel_request_resize(struct wl_listener *listener, voi
 {
 	/* This event is raised when a client would like to begin an interactive
 	 * resize, typically because the user clicked on their client-side
-	 * decorations. Note that a more sophisticated desktop should check the
+	 * decorations. Note that a more sophisticated compositor should check the
 	 * provied serial against a list of button press serials sent to this
 	 * client, to prevent the client from requesting this whenever they want. */
 	struct wlr_xdg_toplevel_resize_event *event = data;
@@ -126,8 +126,8 @@ void handle_new_xdg_surface(struct wl_listener *listener, void *data)
 {
 	/* This event is raised when wlr_xdg_shell receives a new xdg surface from a
 	 * client, either a toplevel (application window) or popup. */
-	struct spider_desktop *desktop =
-		wl_container_of(listener, desktop, new_xdg_surface);
+	struct spider_compositor *compositor =
+		wl_container_of(listener, compositor, new_xdg_surface);
 	struct wlr_xdg_surface *xdg_surface = data;
 	if (xdg_surface->role != WLR_XDG_SURFACE_ROLE_TOPLEVEL) {
 		return;
@@ -136,7 +136,7 @@ void handle_new_xdg_surface(struct wl_listener *listener, void *data)
 	/* Allocate a spider_view for this surface */
 	struct spider_view *view =
 		calloc(1, sizeof(struct spider_view));
-	view->desktop = desktop;
+	view->compositor = compositor;
 	view->xdg_surface = xdg_surface;
 	view->layer = LAYER_TOP;
 
@@ -162,5 +162,5 @@ void handle_new_xdg_surface(struct wl_listener *listener, void *data)
 	wl_signal_add(&toplevel->events.request_fullscreen, &view->request_fullscreen);
 
 	/* Add it to the list of views. */
-	spider_list_insert(&desktop->views, &view->link);
+	spider_list_insert(&compositor->views, &view->link);
 }

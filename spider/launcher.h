@@ -27,7 +27,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include "spider/desktop.h"
+#include "spider/compositor.h"
 
 void launch_client(void *data);
 

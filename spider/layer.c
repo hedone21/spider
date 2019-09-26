@@ -19,7 +19,7 @@
  */
 
 #include "spider/layer.h"
-#include "spider/desktop.h"
+#include "spider/compositor.h"
 #include "common/log.h"
 
 void handle_layer_shell_surface(struct wl_listener *listener, void *data)

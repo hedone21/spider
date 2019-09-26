@@ -21,12 +21,12 @@
 #ifndef __SPIDER_VIEW_H__
 #define __SPIDER_VIEW_H__
 
-#include "spider/desktop.h"
+#include "spider/compositor.h"
 #include "common/util.h"
 
 struct spider_view {
 	struct spider_list link;
-	struct spider_desktop *desktop;
+	struct spider_compositor *compositor;
 	struct wlr_xdg_surface *xdg_surface;
 	struct wl_listener map;
 	struct wl_listener unmap;
@@ -52,7 +52,7 @@ struct spider_view {
 
 void maximize_view(struct spider_view *view, bool maximized);
 void focus_view(struct spider_view *view, struct wlr_surface *surface);
-struct spider_view *desktop_view_at(struct spider_desktop *desktop, 
+struct spider_view *compositor_view_at(struct spider_compositor *compositor, 
 		double lx, double ly, struct wlr_surface **surface, 
 		double *sx, double *sy);
 

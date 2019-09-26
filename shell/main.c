@@ -42,7 +42,7 @@ static void map_win_cb(GtkWidget* widget, gpointer data)
 {
 	struct spider_shell *shell = data;
 
-	spider_desktop_manager_v1_set_background(shell->desktop_manager, shell->surface);
+	spider_compositor_manager_v1_set_background(shell->compositor_manager, shell->surface);
 }
 
 static void destroy_win_cb(GtkWidget* widget, GtkWidget* window)
@@ -97,7 +97,7 @@ int main(int argc, char* argv[])
 	//shell.xdg_surface = xdg_wm_base_get_xdg_surface(shell.wm_base, shell.surface);
 	spider_dbg("%p\n", shell.surface);
 
-	//spider_desktop_manager_v1_set_background(shell.desktop_manager, shell.surface);
+	//spider_compositor_manager_v1_set_background(shell.compositor_manager, shell.surface);
 	gtk_widget_show_all(window);
 
 	gtk_main();

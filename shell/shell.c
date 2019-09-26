@@ -52,8 +52,8 @@ static void registry_handle_global(void *data, struct wl_registry *registry,
 	} else if (strcmp(interface, "xdg_wm_base") == 0) {
 		shell->wm_base = wl_registry_bind(registry, id, &xdg_wm_base_interface, 1);
 		xdg_wm_base_add_listener(shell->wm_base, &wm_base_listener, shell);
-	} else if (strcmp(interface, "spider_desktop_manager_v1") == 0) {
-		shell->desktop_manager = wl_registry_bind(registry, id, &spider_desktop_manager_v1_interface, 1);
+	} else if (strcmp(interface, "spider_compositor_manager_v1") == 0) {
+		shell->compositor_manager = wl_registry_bind(registry, id, &spider_compositor_manager_v1_interface, 1);
 	}
 }
 

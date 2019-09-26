@@ -25,8 +25,8 @@
 #ifndef __SPIDER_CURSOR_H__
 #define __SPIDER_CURSOR_H__
 
-#include "spider/desktop.h"
+#include "spider/compositor.h"
 
-int create_cursor(struct spider_desktop *desktop);
+int create_cursor(struct spider_compositor *compositor);
 
 #endif

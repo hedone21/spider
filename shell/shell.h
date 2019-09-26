@@ -25,7 +25,7 @@
 #include <gtk/gtk.h>
 #include <gdk/gdkwayland.h>
 #include <wlr/types/wlr_layer_shell_v1.h>
-#include "protocol/spider-desktop-manager-v1-client-protocol.h"
+#include "protocol/spider-compositor-manager-v1-client-protocol.h"
 #include "protocol/xdg-shell-client-protocol.h"
 
 struct spider_shell {
@@ -44,7 +44,7 @@ struct spider_shell {
 
 	GdkDisplay *gdk_display;
 
-	struct spider_desktop_manager_v1 *desktop_manager;
+	struct spider_compositor_manager_v1 *compositor_manager;
 };
 
 int shell_init(struct spider_shell *shell);

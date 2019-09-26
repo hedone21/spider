@@ -25,7 +25,7 @@
 #include <string.h>
 #include <getopt.h>
 #include <linux/limits.h>
-#include "spider/desktop.h"
+#include "spider/compositor.h"
 
 struct spider_options g_options = {
 	.shell = NULL,
@@ -104,6 +104,6 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 
-	preinit_desktop();
-	init_desktop();
+	preinit_compositor();
+	init_compositor();
 }

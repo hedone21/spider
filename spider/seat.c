@@ -19,15 +19,15 @@
  */
 
 #include "spider/seat.h"
-#include "spider/desktop.h"
+#include "spider/compositor.h"
 
 void handle_seat_request_cursor(struct wl_listener *listener, void *data) 
 {
-	struct spider_desktop *desktop = wl_container_of(listener, desktop, request_cursor);
+	struct spider_compositor *compositor = wl_container_of(listener, compositor, request_cursor);
 	/* This event is rasied by the seat when a client provides a cursor image */
 	struct wlr_seat_pointer_request_set_cursor_event *event = data;
 	struct wlr_seat_client *focused_client =
-		desktop->seat->pointer_state.focused_client;
+		compositor->seat->pointer_state.focused_client;
 	/* This can be sent by any client, so we check to make sure this one is
 	 * actually has pointer focus first. */
 	if (focused_client == event->seat_client) {
@@ -35,7 +35,7 @@ void handle_seat_request_cursor(struct wl_listener *listener, void *data)
 		 * provided surface as the cursor image. It will set the hardware cursor
 		 * on the output that it's currently on and continue to do so as the
 		 * cursor moves between outputs. */
-		wlr_cursor_set_surface(desktop->cursor, event->surface,
+		wlr_cursor_set_surface(compositor->cursor, event->surface,
 				event->hotspot_x, event->hotspot_y);
 	}
 }

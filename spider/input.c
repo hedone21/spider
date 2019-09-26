@@ -19,7 +19,7 @@
  */
 
 #include <signal.h>
-#include "spider/desktop.h"
+#include "spider/compositor.h"
 #include "spider/input.h"
 #include "spider/view.h"
 
@@ -35,15 +35,15 @@ static void keyboard_handle_modifiers(
 	 * same seat. You can swap out the underlying wlr_keyboard like this and
 	 * wlr_seat handles this transparently.
 	 */
-	wlr_seat_set_keyboard(keyboard->desktop->seat, keyboard->device);
+	wlr_seat_set_keyboard(keyboard->compositor->seat, keyboard->device);
 	/* Send modifiers to the client. */
-	wlr_seat_keyboard_notify_modifiers(keyboard->desktop->seat,
+	wlr_seat_keyboard_notify_modifiers(keyboard->compositor->seat,
 			&keyboard->device->keyboard->modifiers);
 }
 
-static bool handle_keybinding(struct spider_desktop *desktop, xkb_keysym_t sym) {
+static bool handle_keybinding(struct spider_compositor *compositor, xkb_keysym_t sym) {
 	/*
-	 * Here we handle desktop keybindings. This is when the desktop is
+	 * Here we handle compositor keybindings. This is when the compositor is
 	 * processing keys, rather than passing them on to the client for its own
 	 * processing.
 	 *
@@ -51,23 +51,23 @@ static bool handle_keybinding(struct spider_desktop *desktop, xkb_keysym_t sym) 
 	 */
 	switch (sym) {
 		case XKB_KEY_Escape:
-			wl_display_terminate(desktop->wl_display);
-			kill(desktop->client_server_pid, SIGKILL);
-			kill(desktop->client_shell_pid, SIGKILL);
+			wl_display_terminate(compositor->wl_display);
+			kill(compositor->client_server_pid, SIGKILL);
+			kill(compositor->client_shell_pid, SIGKILL);
 			break;
 		case XKB_KEY_F1:
 			/* Cycle to the next view */
-			if (spider_list_length(&desktop->views) < 2) {
+			if (spider_list_length(&compositor->views) < 2) {
 				break;
 			}
 			struct spider_view *current_view = wl_container_of(
-					desktop->views.next, current_view, link);
+					compositor->views.next, current_view, link);
 			struct spider_view *next_view = wl_container_of(
 					current_view->link.next, next_view, link);
 			focus_view(next_view, next_view->xdg_surface->surface);
 			/* Move the previous view to the end of the list */
 			spider_list_remove(&current_view->link);
-			spider_list_insert(desktop->views.prev, &current_view->link);
+			spider_list_insert(compositor->views.prev, &current_view->link);
 			break;
 		default:
 			return false;
@@ -80,9 +80,9 @@ static void handle_keyboard_key(struct wl_listener *listener, void *data)
 	/* This event is raised when a key is pressed or released. */
 	struct spider_keyboard *keyboard =
 		wl_container_of(listener, keyboard, key);
-	struct spider_desktop *desktop = keyboard->desktop;
+	struct spider_compositor *compositor = keyboard->compositor;
 	struct wlr_event_keyboard_key *event = data;
-	struct wlr_seat *seat = desktop->seat;
+	struct wlr_seat *seat = compositor->seat;
 
 	/* Translate libinput keycode -> xkbcommon */
 	uint32_t keycode = event->keycode + 8;
@@ -95,9 +95,9 @@ static void handle_keyboard_key(struct wl_listener *listener, void *data)
 	uint32_t modifiers = wlr_keyboard_get_modifiers(keyboard->device->keyboard);
 	if ((modifiers & WLR_MODIFIER_ALT) && event->state == WLR_KEY_PRESSED) {
 		/* If alt is held down and this button was _pressed_, we attempt to
-		 * process it as a desktop keybinding. */
+		 * process it as a compositor keybinding. */
 		for (int i = 0; i < nsyms; i++) {
-			handled = handle_keybinding(desktop, syms[i]);
+			handled = handle_keybinding(compositor, syms[i]);
 		}
 	}
 
@@ -109,11 +109,11 @@ static void handle_keyboard_key(struct wl_listener *listener, void *data)
 	}
 }
 
-static void add_new_keyboard(struct spider_desktop *desktop, struct wlr_input_device *device) 
+static void add_new_keyboard(struct spider_compositor *compositor, struct wlr_input_device *device) 
 {
 	struct spider_keyboard *keyboard =
 		calloc(1, sizeof(struct spider_keyboard));
-	keyboard->desktop = desktop;
+	keyboard->compositor = compositor;
 	keyboard->device = device;
 
 	/* We need to prepare an XKB keymap and assign it to the keyboard. This
@@ -134,34 +134,34 @@ static void add_new_keyboard(struct spider_desktop *desktop, struct wlr_input_de
 	keyboard->key.notify = handle_keyboard_key;
 	wl_signal_add(&device->keyboard->events.key, &keyboard->key);
 
-	wlr_seat_set_keyboard(desktop->seat, device);
+	wlr_seat_set_keyboard(compositor->seat, device);
 
 	/* And add the keyboard to our list of keyboards */
-	spider_list_insert(&desktop->keyboards, &keyboard->link);
+	spider_list_insert(&compositor->keyboards, &keyboard->link);
 }
 
-static void add_new_pointer(struct spider_desktop *desktop, struct wlr_input_device *device)
+static void add_new_pointer(struct spider_compositor *compositor, struct wlr_input_device *device)
 {
 	/* We don't do anything special with pointers. All of our pointer handling
-	 * is proxied through wlr_cursor. On another desktop, you might take this
+	 * is proxied through wlr_cursor. On another compositor, you might take this
 	 * opportunity to do libinput configuration on the device to set
 	 * acceleration, etc. */
-	wlr_cursor_attach_input_device(desktop->cursor, device);
+	wlr_cursor_attach_input_device(compositor->cursor, device);
 }
 
 void handle_new_input(struct wl_listener *listener, void *data)
 {
 	/* This event is raised by the backend when a new input device becomes
 	 * available. */
-	struct spider_desktop *desktop =
-		wl_container_of(listener, desktop, new_input);
+	struct spider_compositor *compositor =
+		wl_container_of(listener, compositor, new_input);
 	struct wlr_input_device *device = data;
 	switch (device->type) {
 		case WLR_INPUT_DEVICE_KEYBOARD:
-			add_new_keyboard(desktop, device);
+			add_new_keyboard(compositor, device);
 			break;
 		case WLR_INPUT_DEVICE_POINTER:
-			add_new_pointer(desktop, device);
+			add_new_pointer(compositor, device);
 			break;
 		default:
 			break;
@@ -170,8 +170,8 @@ void handle_new_input(struct wl_listener *listener, void *data)
 	 * communiciated to the client. In TinyWL we always have a cursor, even if
 	 * there are no pointer devices, so we always include that capability. */
 	uint32_t caps = WL_SEAT_CAPABILITY_POINTER;
-	if (!spider_list_empty(&desktop->keyboards)) {
+	if (!spider_list_empty(&compositor->keyboards)) {
 		caps |= WL_SEAT_CAPABILITY_KEYBOARD;
 	}
-	wlr_seat_set_capabilities(desktop->seat, caps);
+	wlr_seat_set_capabilities(compositor->seat, caps);
 }

@@ -21,7 +21,7 @@
  */
 
 #include <wlr/types/wlr_presentation_time.h>
-#include "spider/desktop.h"
+#include "spider/compositor.h"
 #include "spider/output.h"
 #include "spider/view.h"
 #include "common/log.h"
@@ -40,7 +40,7 @@ static void render_surface(struct wlr_surface *surface,	int sx, int sy, void *da
 
 	double ox = 0, oy = 0;
 	wlr_output_layout_output_coords(
-			view->desktop->output_layout, output, &ox, &oy);
+			view->compositor->output_layout, output, &ox, &oy);
 	ox += view->box.x + sx, oy += view->box.y + sy;
 
 	struct wlr_box box = {
@@ -71,7 +71,7 @@ static void render_surface(struct wlr_surface *surface,	int sx, int sy, void *da
 static void output_handle_frame(struct wl_listener *listener, void *data)
 {
 	struct spider_output *output = wl_container_of(listener, output, frame);
-	struct wlr_renderer *renderer = output->desktop->renderer;
+	struct wlr_renderer *renderer = output->compositor->renderer;
 
 	struct timespec now;
 	clock_gettime(CLOCK_MONOTONIC, &now);
@@ -92,7 +92,7 @@ static void output_handle_frame(struct wl_listener *listener, void *data)
 
 
 	struct spider_view *view;
-	spider_list_for_each_reverse(view, &output->desktop->views, link) {
+	spider_list_for_each_reverse(view, &output->compositor->views, link) {
 		if (!view->mapped) {
 			continue;
 		}
@@ -163,8 +163,8 @@ static void output_handle_present(struct wl_listener *listener, void *data)
  * monitor) becomes available. */
 void handle_new_output(struct wl_listener *listener, void *data)
 {
-	struct spider_desktop *desktop =
-		wl_container_of(listener, desktop, new_output);
+	struct spider_compositor *compositor =
+		wl_container_of(listener, compositor, new_output);
 	struct wlr_output *wlr_output = data;
 
 	spider_dbg("Add output: %s\n", wlr_output->name);
@@ -181,9 +181,9 @@ void handle_new_output(struct wl_listener *listener, void *data)
 	struct spider_output *output = calloc(1, sizeof(struct spider_output));
 
 	output->wlr_output = wlr_output;
-	output->desktop = desktop;
+	output->compositor = compositor;
 	wlr_output->data = output;
-	spider_list_insert(&desktop->outputs, &output->link);
+	spider_list_insert(&compositor->outputs, &output->link);
 
 	output->frame.notify = output_handle_frame;
 	wl_signal_add(&wlr_output->events.frame, &output->frame);
@@ -206,7 +206,7 @@ void handle_new_output(struct wl_listener *listener, void *data)
 	wl_signal_add(&output->damage->events.destroy, &output->damage_destroy);
 	*/
 
-	wlr_output_layout_add_auto(desktop->output_layout, wlr_output);
+	wlr_output_layout_add_auto(compositor->output_layout, wlr_output);
 
 	wlr_output_create_global(wlr_output);
 }

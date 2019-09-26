@@ -28,13 +28,13 @@
 #include <wlr/types/wlr_output.h>
 #include <wlr/types/wlr_output_layout.h>
 #include <stdlib.h>
-#include "spider/desktop.h"
+#include "spider/compositor.h"
 #include "spider/layer.h"
 #include "common/util.h"
 
 struct spider_output {
 	struct spider_list link;
-	struct spider_desktop *desktop;
+	struct spider_compositor *compositor;
 	struct wlr_output *wlr_output;
 
 	struct wl_listener frame;

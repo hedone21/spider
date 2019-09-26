@@ -23,8 +23,8 @@
     SOFTWARE.
   </copyright>
 
-  <interface name="spider_desktop_manager_v1" version="1">
-    <description summary="create desktop widgets and helpers">
+  <interface name="spider_compositor_manager_v1" version="1">
+    <description summary="create compositor widgets and helpers">
     </description>
     <request name="set_background">
       <arg name="surface" type="object" interface="wl_surface"/>

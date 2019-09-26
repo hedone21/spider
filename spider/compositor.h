@@ -77,7 +77,7 @@ enum spider_cursor_mode {
 	SPIDER_CURSOR_RESIZE,
 };
 
-struct spider_desktop {
+struct spider_compositor {
 	struct wl_display *wl_display;
 	struct wl_event_loop *wl_event_loop;
 	struct wlr_compositor *compositor;
@@ -124,14 +124,14 @@ struct spider_desktop {
 
 struct spider_keyboard {
 	struct spider_list link;
-	struct spider_desktop *desktop;
+	struct spider_compositor *compositor;
 	struct wlr_input_device *device;
 
 	struct wl_listener modifiers;
 	struct wl_listener key;
 };
 
-int preinit_desktop();
-int init_desktop();
+int preinit_compositor();
+int init_compositor();
 
 #endif /* __SERVER_H__ */
