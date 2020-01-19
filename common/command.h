@@ -23,6 +23,6 @@
 
 #include <unistd.h>
 
-void command_launch(const char *command);
+void command_launch(char *command);
 
 #endif

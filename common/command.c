@@ -18,13 +18,50 @@
  * SOFTWARE.
  */
 
+#include <string.h>
 #include "common/log.h"
 
-void command_launch(const char *command)
+int get_nargs(const char *command)
 {
+	char *ptr = command;
+	int nargs = 1;
+
+	while (*ptr != '\0') {
+		if (*ptr == ' ')
+			nargs++;
+
+		ptr++;
+	}
+
+	return nargs;
+}
+
+void command_launch(char *command)
+{
+	char **args;
+	char *delim = " ";
+	int i = 0;
 	spider_dbg("launch command: %s\n", command);
 
+	args = calloc(1, sizeof(char*) * (get_nargs(command) + 1));
+	if (!args) {
+		spider_err("Failed to alloc\n");
+		return;
+	}
+
+	char *ptr = strtok(command, delim);
+	while(ptr != NULL)
+	{
+		args[i++] = ptr;
+		ptr = strtok(NULL, delim);
+	}	
+
+	args[i] = NULL;
 	if (fork() == 0) {
-		execlp(command, command, (void *)NULL);
+		execvp(command, args);
+	}
+
+	if (args) {
+		free(args);
 	}
 }
