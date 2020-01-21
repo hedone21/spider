@@ -25,6 +25,7 @@
 #include "spider/compositor.h"
 #include "spider/cursor.h"
 #include "spider/view.h"
+#include "common/log.h"
 
 static void process_cursor_move(struct spider_compositor *compositor, uint32_t time) {
 	/* Move the grabbed view to the new position. */
@@ -166,6 +167,11 @@ static void compositor_cursor_button(struct wl_listener *listener, void *data) {
 	struct wlr_surface *surface;
 	struct spider_view *view = compositor_view_at(compositor,
 			compositor->cursor->x, compositor->cursor->y, &surface, &sx, &sy);
+	if (!view) {
+		spider_err("Failed to find cursor view\n");
+		return;
+	}
+
 	if (event->state == WLR_BUTTON_RELEASED) {
 		/* If you released any buttons, we exit interactive move/resize mode. */
 		compositor->cursor_mode = SPIDER_CURSOR_PASSTHROUGH;

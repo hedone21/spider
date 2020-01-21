@@ -184,5 +184,8 @@ struct spider_view *compositor_view_at(
 			return view;
 		}
 	}
+	
+	spider_err("Failed to find compositor view at (%f, %f)\n", ly, ly);
+	*surface = NULL;
 	return NULL;
 }

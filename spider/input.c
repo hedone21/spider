@@ -22,6 +22,7 @@
 #include "spider/compositor.h"
 #include "spider/input.h"
 #include "spider/view.h"
+#include "common/log.h"
 
 static void keyboard_handle_modifiers(
 		struct wl_listener *listener, void *data) {
@@ -64,7 +65,13 @@ static bool handle_keybinding(struct spider_compositor *compositor, xkb_keysym_t
 					compositor->views.next, current_view, link);
 			struct spider_view *next_view = wl_container_of(
 					current_view->link.next, next_view, link);
+			if (!current_view || !next_view) {
+				spider_err("Failed to find view\n");
+				return false;
+			}
+
 			focus_view(next_view, next_view->xdg_surface->surface);
+
 			/* Move the previous view to the end of the list */
 			spider_list_remove(&current_view->link);
 			spider_list_insert(compositor->views.prev, &current_view->link);
