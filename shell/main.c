@@ -30,6 +30,8 @@
 #include "common/log.h"
 #include "common/global_vars.h"
 
+int SPIDER_LOGLEVEL = 2;
+
 static void scale_fullscreen(int *screen_width, int *screen_height)
 {
 	GdkScreen *screen = gdk_screen_get_default ();
@@ -59,6 +61,19 @@ int main(int argc, char* argv[])
 	int screen_width;
 	int screen_height;
 	char *url = NULL;
+	char *loglevel;
+
+	loglevel = getenv("LOGLEVEL");
+	if (loglevel) {
+		SPIDER_LOGLEVEL = atoi(loglevel);
+		spider_log("LOGLEVEL is set to %s\n", loglevel);
+	}
+
+	loglevel = getenv("LOGLEVEL_SHELL");
+	if (loglevel) {
+		SPIDER_LOGLEVEL = atoi(loglevel);
+		spider_log("LOGLEVEL(shell) is set to %s\n", loglevel);
+	}
 
 	url = getenv(SPIDER_WEB_URL);
 	spider_dbg("URL=%s\n", url);

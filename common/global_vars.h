@@ -20,7 +20,29 @@
  * SOFTWARE.
  */
 
+#ifndef __GLOBAL_VARS_H__
+#define __GLOBAL_VARS_H__
+
 #define SPIDER_WEB_URL 			"SPIDER_WEB_URL"
 #define SPIDER_WEB_URL_PATH 		"localhost:8080"
 #define SPIDER_PANEL_URL 		"SPIDER_PANEL_URL"
 #define SPIDER_CLIENT_SERVER_PATH 	"SPIDER_CLIENT_SERVER_PATH"
+
+/** 
+ * 0: No dbg
+ * 1: Error log only
+ * 2: Error log, normal log (default)
+ * 3: Error log, normal log, dbg log
+ * 4: Error log, normal log, dbg log, verbose log
+ *
+ * Defined in every main.c files
+ *
+ * usage:
+ * 	$ LOGLEVEL=4 ./run.sh
+ * 	$ LOGLEVEL_MAIN=3 ./run.sh
+ * 	$ LOGLEVEL_SHELL=2 ./run.sh
+ * 	$ LOGLEVEL_PANEL=1 ./run.sh
+ */
+extern int SPIDER_LOGLEVEL;
+
+#endif /* __GLOBAL_VARS_H__ */

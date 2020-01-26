@@ -26,6 +26,10 @@
 #include <getopt.h>
 #include <linux/limits.h>
 #include "spider/compositor.h"
+#include "common/log.h"
+#include "common/global_vars.h"
+
+int SPIDER_LOGLEVEL = 2;
 
 struct spider_options g_options = {
 	.shell = NULL,
@@ -39,6 +43,7 @@ void help()
 
 int main(int argc, char *argv[]) 
 {
+	char *loglevel;
 
 	static struct option long_options[] = {
 		{"help", no_argument, NULL, 'h'},
@@ -102,6 +107,18 @@ int main(int argc, char *argv[])
 	if (optind < argc) {
 		help();
 		return 0;
+	}
+
+	loglevel = getenv("LOGLEVEL");
+	if (loglevel) {
+		SPIDER_LOGLEVEL = atoi(loglevel);
+		spider_log("LOGLEVEL is set to %s\n", loglevel);
+	}
+
+	loglevel = getenv("LOGLEVEL_MAIN");
+	if (loglevel) {
+		SPIDER_LOGLEVEL = atoi(loglevel);
+		spider_log("LOGLEVEL(main) is set to %s\n", loglevel);
 	}
 
 	preinit_compositor();

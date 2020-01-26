@@ -26,6 +26,8 @@
 #include "common/log.h"
 #include "common/global_vars.h"
 
+int SPIDER_LOGLEVEL = 2;
+
 static void set_panelsize(struct spider_panel *panel, int portion)
 {
 	GdkScreen *screen = gdk_screen_get_default ();
@@ -51,6 +53,19 @@ int main(int argc, char *argv[])
 	struct spider_panel panel;
 	GdkWindow *gdk_window;
 	char *url = NULL;
+	char *loglevel;
+
+	loglevel = getenv("LOGLEVEL");
+	if (loglevel) {
+		SPIDER_LOGLEVEL = atoi(loglevel);
+		spider_log("LOGLEVEL is set to %s\n", loglevel);
+	}
+
+	loglevel = getenv("LOGLEVEL_PANEL");
+	if (loglevel) {
+		SPIDER_LOGLEVEL = atoi(loglevel);
+		spider_log("LOGLEVEL(panel) is set to %s\n", loglevel);
+	}
 
 	url = getenv(SPIDER_PANEL_URL);
 	spider_dbg("URL=%s\n", url);
