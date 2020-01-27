@@ -247,7 +247,8 @@ int init_compositor()
 	}
 
 	compositor->wl_event_loop = wl_display_get_event_loop(compositor->wl_display);
-	wl_event_loop_add_idle(compositor->wl_event_loop, launch_client, compositor);
+	//wl_event_loop_add_idle(compositor->wl_event_loop, launch_client, compositor);
+	launch_client(compositor);
 
 	/* Run the Wayland event loop. This does not return until you exit the
 	 * compositor. Starting the backend rigged up all of the necessary event

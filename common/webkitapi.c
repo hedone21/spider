@@ -32,10 +32,10 @@ void wkapi_dp_cb(WebKitWebView *webview, WebKitPolicyDecision *decision, WebKitP
 	WebKitResponsePolicyDecision *response = NULL;
 	const char *uri;
 	const char *http_method;
-	spider_dbg("type=%d\n", type);
 
 	switch (type) {
 	case WEBKIT_POLICY_DECISION_TYPE_NAVIGATION_ACTION: 
+		spider_dbg("type=WEBKIT_POLICY_DECISION_TYPE_NAVIGATION_ACTION(%d)\n", type);
 		navigation_decision = WEBKIT_NAVIGATION_POLICY_DECISION(decision);
 		navigation_action = webkit_navigation_policy_decision_get_navigation_action(navigation_decision);
 		uri_request = webkit_navigation_action_get_request(navigation_action);
@@ -45,10 +45,12 @@ void wkapi_dp_cb(WebKitWebView *webview, WebKitPolicyDecision *decision, WebKitP
 		/* Make a policy decision here. */
 		break;
 	case WEBKIT_POLICY_DECISION_TYPE_NEW_WINDOW_ACTION:
+		spider_dbg("type=WEBKIT_POLICY_DECISION_TYPE_NEW_WINDOW_ACTION(%d)\n", type);
 		navigation_decision = WEBKIT_NAVIGATION_POLICY_DECISION(decision);
 		/* Make a policy decision here. */
 		break;
 	case WEBKIT_POLICY_DECISION_TYPE_RESPONSE:
+		spider_dbg("type=WEBKIT_POLICY_DECISION_TYPE_RESPONSE(%d)\n", type);
 		response = WEBKIT_RESPONSE_POLICY_DECISION(decision);
 		/* Make a policy decision here. */
 		break;
@@ -77,6 +79,5 @@ void wkapi_sf_cb(WebKitWebView *webviewm, WebKitFormSubmissionRequest *request, 
 void wkapi_close_cb(WebKitWebView *webView, GtkWidget *window)
 {
 	gtk_widget_destroy(window);
-	return TRUE;
 }
 
