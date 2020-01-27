@@ -66,13 +66,13 @@ int main(int argc, char* argv[])
 	loglevel = getenv("LOGLEVEL");
 	if (loglevel) {
 		SPIDER_LOGLEVEL = atoi(loglevel);
-		spider_log("LOGLEVEL is set to %s\n", loglevel);
+		spider_dbg("LOGLEVEL is set to %s\n", loglevel);
 	}
 
 	loglevel = getenv("LOGLEVEL_SHELL");
 	if (loglevel) {
 		SPIDER_LOGLEVEL = atoi(loglevel);
-		spider_log("LOGLEVEL(shell) is set to %s\n", loglevel);
+		spider_dbg("LOGLEVEL(shell) is set to %s\n", loglevel);
 	}
 
 	url = getenv(SPIDER_WEB_URL);

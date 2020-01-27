@@ -30,32 +30,38 @@
 #include <time.h>
 #include "common/global_vars.h"
 
+#define __PATH__ (strchr(__FILE__, '/') ? strchr(__FILE__, '/') + 1 : __FILE__)
+
 #define spider_verbose(fmt, ...) 					\
 	do {								\
 		if (SPIDER_LOGLEVEL < 4) break;				\
-		fprintf(stdout, "[%s][%s:%d] " fmt, __FILE__, 		\
-			__func__, __LINE__, ## __VA_ARGS__);		\
+		fprintf(stdout, "\033[2;32m[%s (%s)] " fmt, __func__, \
+			__PATH__, ## __VA_ARGS__);		\
+		fprintf(stderr, "\033[0m");				\
 	}while(0)
 
 #define spider_dbg(fmt, ...) 						\
 	do {								\
 		if (SPIDER_LOGLEVEL < 3) break;				\
-		fprintf(stdout, "[%s][%s:%d] " fmt, __FILE__, 		\
-			__func__, __LINE__, ## __VA_ARGS__);		\
+		fprintf(stdout, "\033[0;32m[%s (%s)] " fmt, __func__, \
+			__PATH__, ## __VA_ARGS__);		\
+		fprintf(stderr, "\033[0m");				\
 	}while(0)
 
 #define spider_log(fmt, ...) 						\
 	do {								\
 		if (SPIDER_LOGLEVEL < 2) break;				\
-		fprintf(stdout, "[%s][%s:%d] " fmt, __FILE__, 		\
-			__func__, __LINE__, ## __VA_ARGS__);		\
+		fprintf(stdout, "\033[1;37m[%s (%s)] " fmt, __func__, \
+			__PATH__, ## __VA_ARGS__);		\
+		fprintf(stderr, "\033[0m");				\
 	}while(0)
 
 #define spider_err(fmt, ...) 						\
 	do {								\
 		if (SPIDER_LOGLEVEL < 1) break;				\
-		fprintf(stderr, "[%s][%s:%d] " fmt, __FILE__, 		\
-			__func__, __LINE__, ## __VA_ARGS__);		\
+		fprintf(stderr, "\033[1;31m[%s (%s)] " fmt, __PATH__, \
+			__func__, ## __VA_ARGS__);		\
+		fprintf(stderr, "\033[0m");				\
 	}while(0)
 
 #endif /* __LOG_H__ */

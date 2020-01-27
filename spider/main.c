@@ -112,13 +112,13 @@ int main(int argc, char *argv[])
 	loglevel = getenv("LOGLEVEL");
 	if (loglevel) {
 		SPIDER_LOGLEVEL = atoi(loglevel);
-		spider_log("LOGLEVEL is set to %s\n", loglevel);
+		spider_dbg("LOGLEVEL is set to %s\n", loglevel);
 	}
 
 	loglevel = getenv("LOGLEVEL_MAIN");
 	if (loglevel) {
 		SPIDER_LOGLEVEL = atoi(loglevel);
-		spider_log("LOGLEVEL(main) is set to %s\n", loglevel);
+		spider_dbg("LOGLEVEL(main) is set to %s\n", loglevel);
 	}
 
 	preinit_compositor();
