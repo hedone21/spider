@@ -34,5 +34,21 @@ ninja -C build
 ./run.sh # need to be modified
 ```
 
+# Debug Options
+0: No dbg
+1: Error log only
+2: Error log, normal log (default)
+3: Error log, normal log, dbg log
+4: Error log, normal log, dbg log, verbose log
+
+```
+# usage:
+$ LOGLEVEL=4 ./run.sh
+$ LOGLEVEL_MAIN=3 ./run.sh # main spider compositor only
+$ LOGLEVEL_SHELL=2 ./run.sh # spider shell only
+$ LOGLEVEL_PANEL=1 ./run.sh # spider panel only
+
+```
+
 # Project Status
 This project is still under development. Please use this project for testing and reference purposes before entering the alpha stage.
