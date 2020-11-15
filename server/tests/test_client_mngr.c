@@ -10,19 +10,24 @@ static void test_client_mngr_add_client() {
 
     client_mngr = spider_client_mngr_new();
     assert(client_mngr != NULL);
+    spider_client_mngr_free(client_mngr);
 
     /* NULL client */
+    client_mngr = spider_client_mngr_new();
     ret = spider_client_mngr_append_client(client_mngr, client);
     assert(ret != true);
     spider_client_mngr_free(client_mngr);
+    client_mngr = spider_client_mngr_new();
     ret = spider_client_mngr_prepend_client(client_mngr, client);
     assert(ret != true);
     spider_client_mngr_free(client_mngr);
+    client_mngr = spider_client_mngr_new();
     ret = spider_client_mngr_insert_client(client_mngr, client, 0);
     assert(ret != true);
     spider_client_mngr_free(client_mngr);
 
     /* overlapped pid */
+    client_mngr = spider_client_mngr_new();
     client = spider_client_create(0);
     ret = spider_client_mngr_append_client(client_mngr, client);
     assert(ret == true);
@@ -31,6 +36,7 @@ static void test_client_mngr_add_client() {
     assert(ret != true);
     spider_client_mngr_free(client_mngr);
 
+    client_mngr = spider_client_mngr_new();
     client = spider_client_create(0);
     ret = spider_client_mngr_prepend_client(client_mngr, client);
     assert(ret == true);
@@ -39,6 +45,7 @@ static void test_client_mngr_add_client() {
     assert(ret != true);
     spider_client_mngr_free(client_mngr);
 
+    client_mngr = spider_client_mngr_new();
     client = spider_client_create(0);
     ret = spider_client_mngr_insert_client(client_mngr, client, 0);
     assert(ret == true);
@@ -48,6 +55,7 @@ static void test_client_mngr_add_client() {
     spider_client_mngr_free(client_mngr);
 
     /* append client with shell, panel */
+    client_mngr = spider_client_mngr_new();
     client = spider_client_create(0);
     ret = spider_client_mngr_append_client(client_mngr, client);
     assert(ret == true);
@@ -76,6 +84,7 @@ static void test_client_mngr_add_client() {
     spider_client_mngr_free(client_mngr);
 
     /* prepend client */
+    client_mngr = spider_client_mngr_new();
     client = spider_client_create(0);
     ret = spider_client_mngr_prepend_client(client_mngr, client);
     assert(ret == true);
@@ -104,6 +113,7 @@ static void test_client_mngr_add_client() {
     spider_client_mngr_free(client_mngr);
 
     /* insert client */
+    client_mngr = spider_client_mngr_new();
     client = spider_client_create(0);
     ret = spider_client_mngr_insert_client(client_mngr, client, 0);
     assert(ret == true);
@@ -184,7 +194,7 @@ static void test_client_mngr_get_client() {
     assert(client->pid == 4);
     client = spider_client_mngr_get_panel(client_mngr, 1);
     assert(client->pid == 5);
-    spider_client_mngr_remove_client(client_mngr, 4);
+    spider_client_mngr_remove_client(client_mngr, 3);
     client = spider_client_mngr_get_panel(client_mngr, 0);
     assert(client == NULL);
     spider_client_mngr_free(client_mngr);

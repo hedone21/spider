@@ -57,7 +57,7 @@ struct spider_client* spider_client_create_panel(pid_t pid, int panel_id) {
     }else if (panel_id == 1) {
         client->layer = PANEL2_LAYER;
     }else {
-        spider_err("Unsupported panel id");
+        spider_err("Unsupported panel id\n");
         return NULL;
     }
 
