@@ -1,4 +1,6 @@
 /*
+ * Copyright (c) 2020, 2021 Minyoung.Go <hedone21@gmail.com>
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -18,12 +20,10 @@
  * SOFTWARE.
  */
 
-#ifndef __SPIDER_SPIDER_XDG_SHELL_H__
-#define __SPIDER_SPIDER_XDG_SHELL_H__
+#ifndef SPIDER_WINDOW_H
+#define SPIDER_WINDOW_H
 
-#include <wayland-server.h>
-#include <wlr/types/wlr_xdg_shell.h>
+struct spider_window {
+};
 
-void handle_new_xdg_surface(struct wl_listener *listener, void *data);
-
-#endif
+#endif /* SPIDER_WINDOW_H */

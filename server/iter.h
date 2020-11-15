@@ -1,4 +1,6 @@
 /*
+ * Copyright (c) 2020, 2021 Minyoung.Go <hedone21@gmail.com>
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -18,11 +20,20 @@
  * SOFTWARE.
  */
 
-#ifndef __SPIDER_SPIDER_SEAT_H__
-#define __SPIDER_SPIDER_SEAT_H__
+#ifndef SPIDER_ITER_H
+#define SPIDER_ITER_H
 
-#include <wayland-server.h>
+struct spider_iter {
+    unsigned int pos;
+    void *data;
 
-void handle_seat_request_cursor(struct wl_listener *listener, void *data);
+    /* Data for internal use. */
+    void *_user_data;
 
-#endif
+    struct spider_iter* (*next)(struct spider_iter *iter);
+};
+
+void* spider_iter_get_data(struct spider_iter *iter);
+unsigned int spider_iter_get_pos(struct spider_iter *iter);
+
+#endif /* SPIDER_ITER_H */

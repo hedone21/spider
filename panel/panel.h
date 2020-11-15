@@ -26,7 +26,7 @@
 #include <gdk/gdkwayland.h>
 #include <wlr/types/wlr_layer_shell_v1.h>
 #include "common/webkitapi.h"
-#include "protocol/spider-compositor-manager-v1-client-protocol.h"
+#include "protocol/spider-server-manager-v1-client-protocol.h"
 #include "protocol/xdg-shell-client-protocol.h"
 
 struct spider_panel {

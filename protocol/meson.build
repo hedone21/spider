@@ -10,7 +10,7 @@ protocols_xml = [
   ]
 
 client_protocols_xml = [
-  ['.', 'spider-compositor-manager-v1', 'internal'],
+  ['.', 'spider-server-manager-v1', 'internal'],
   ['.', 'wlr-layer-shell', 'v1'],
   ]
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Minyoung.Go <hedone21@gmail.com>
+ * Copyright (c) 2020, 2021 Minyoung.Go <hedone21@gmail.com>
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,31 +20,17 @@
  * SOFTWARE.
  */
 
-#ifndef __SPIDER_OUTPUT_H__
-#define __SPIDER_OUTPUT_H__
+#include <assert.h>
 
-#include <wayland-server.h>
-#include <wlr/render/wlr_renderer.h>
-#include <wlr/types/wlr_output.h>
-#include <wlr/types/wlr_output_layout.h>
-#include <stdlib.h>
-#include "spider/compositor.h"
-#include "spider/layer.h"
-#include "common/util.h"
+#ifndef SPIDER_ASSERT_H
+#define SPIDER_ASSERT_H
 
-struct spider_output {
-	struct spider_list link;
-	struct spider_compositor *compositor;
-	struct wlr_output *wlr_output;
+#include "common/log.h"
 
-	struct wl_listener frame;
-	struct wl_listener destroy;
-	struct wl_listener enable;
-	struct wl_listener mode;
-	struct wl_listener transform;
-	struct wl_listener present;
-};
+#define spider_assert(expr) do {             \
+    if (!expr)                                                          \
+        spider_err("[Line: %d] Assert failed (%s)\n", __LINE__, #expr); \
+    assert(expr);                                                       \
+}while(0);
 
-void handle_new_output(struct wl_listener *listener, void *data);
-
-#endif
+#endif /* SPIDER_ASSERT_H */

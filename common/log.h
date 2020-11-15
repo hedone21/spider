@@ -30,6 +30,8 @@
 #include <time.h>
 #include "common/global_vars.h"
 
+#define SPIDER_LOGLEVEL 2
+
 #define __CLOCK__ ({	\
 	char retval[20];						\
 	time_t rawtime;							\

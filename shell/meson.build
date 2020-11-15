@@ -13,8 +13,8 @@ shell_dep = [
 shell_exe = executable(
   'client', 
   shell_src,
-  spider_compositor_manager_v1_protocol_c,
-  spider_compositor_manager_v1_client_protocol_h,
+  spider_server_manager_v1_protocol_c,
+  spider_server_manager_v1_client_protocol_h,
   xdg_shell_protocol_c,
   xdg_shell_client_protocol_h,
   xdg_shell_unstable_v6_protocol_c,
