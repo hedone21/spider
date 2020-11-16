@@ -51,11 +51,16 @@ static struct spider_iter* get_iter_next(struct spider_iter *iter) {
 
     ret_iter->pos = iter->pos + 1;
     if (ret_iter->pos >= spider_client_mngr_get_client_cnt(mngr)) {
-        return NULL;
+        free(ret_iter);
+        ret_iter = NULL;
+        goto out;
     }
 
     ret_iter->data = spider_client_mngr_get_client(mngr, ret_iter->pos);
     spider_assert(ret_iter->data);
+
+out:
+    free(iter);
 
     return ret_iter;
 }
@@ -119,27 +124,8 @@ static bool save_client_to_special_layer(struct spider_client_mngr *mngr, struct
 
 bool spider_client_mngr_append_client(struct spider_client_mngr *mngr, struct spider_client *client) {
     spider_assert(mngr);
-    bool ret;
 
-    if (client == NULL) {
-        spider_err("Null client object\n");
-        return false;
-    }
-
-    ret = check_client_already_exist(mngr, client);
-    if (ret == false) {
-        return false;
-    }
-
-    ret = save_client_to_special_layer(mngr, client);
-    if (ret == false) {
-        return false;
-    }
-
-    mngr->clients = g_list_append(mngr->clients, client);
-    mngr->client_cnt += 1;
-    
-    return true;
+    return spider_client_mngr_insert_client(mngr, client, -1);
 }
 
 bool spider_client_mngr_prepend_client(struct spider_client_mngr *mngr, struct spider_client *client) {
@@ -218,6 +204,7 @@ struct spider_client* spider_client_mngr_get_client_with_pid(struct spider_clien
         client = NULL;
     }
 
+    free(iter);
     return client;
 }
 
@@ -254,7 +241,7 @@ void spider_client_mngr_remove_client(struct spider_client_mngr *mngr, int idx) 
         return;
     }
 
-    g_list_remove(mngr->clients, client);
+    mngr->clients = g_list_remove(mngr->clients, client);
     if (mngr->shell_client == client) {
         mngr->shell_client = NULL;
     }else if (mngr->panel1_client == client) {
@@ -283,5 +270,7 @@ void spider_client_mngr_free(struct spider_client_mngr *mngr) {
         spider_client_free(&client);
     }
 
+    g_list_free(mngr->clients);
+    free(iter);
     free(mngr);
 }

@@ -13,6 +13,7 @@ static void test_client_mngr_add_client() {
     spider_client_mngr_free(client_mngr);
 
     /* NULL client */
+    client = NULL;
     client_mngr = spider_client_mngr_new();
     ret = spider_client_mngr_append_client(client_mngr, client);
     assert(ret != true);
@@ -34,6 +35,34 @@ static void test_client_mngr_add_client() {
     client = spider_client_create(0);
     ret = spider_client_mngr_append_client(client_mngr, client);
     assert(ret != true);
+    spider_client_free(&client);
+    spider_client_mngr_free(client_mngr);
+
+    client_mngr = spider_client_mngr_new();
+    client = spider_client_create(0);
+    ret = spider_client_mngr_append_client(client_mngr, client);
+    assert(ret == true);
+    client = spider_client_create(1);
+    ret = spider_client_mngr_append_client(client_mngr, client);
+    assert(ret == true);
+    client = spider_client_create(2);
+    ret = spider_client_mngr_append_client(client_mngr, client);
+    assert(ret == true);
+    client = spider_client_create(3);
+    ret = spider_client_mngr_append_client(client_mngr, client);
+    assert(ret == true);
+    client = spider_client_create(1);
+    ret = spider_client_mngr_append_client(client_mngr, client);
+    assert(ret != true);
+    spider_client_free(&client);
+    client = spider_client_create(3);
+    ret = spider_client_mngr_append_client(client_mngr, client);
+    assert(ret != true);
+    spider_client_free(&client);
+    client = spider_client_create(0);
+    ret = spider_client_mngr_append_client(client_mngr, client);
+    assert(ret != true);
+    spider_client_free(&client);
     spider_client_mngr_free(client_mngr);
 
     client_mngr = spider_client_mngr_new();
@@ -43,6 +72,7 @@ static void test_client_mngr_add_client() {
     client = spider_client_create(0);
     ret = spider_client_mngr_prepend_client(client_mngr, client);
     assert(ret != true);
+    spider_client_free(&client);
     spider_client_mngr_free(client_mngr);
 
     client_mngr = spider_client_mngr_new();
@@ -52,6 +82,7 @@ static void test_client_mngr_add_client() {
     client = spider_client_create(0);
     ret = spider_client_mngr_insert_client(client_mngr, client, 1);
     assert(ret != true);
+    spider_client_free(&client);
     spider_client_mngr_free(client_mngr);
 
     /* append client with shell, panel */
@@ -173,6 +204,7 @@ static void test_client_mngr_get_client() {
         client = (struct spider_client*)iter->data;
         assert(pos == client->pid);
     }
+    free(iter);
 
     client = spider_client_mngr_get_client(client_mngr, 2);
     assert(client->pid == 2);
