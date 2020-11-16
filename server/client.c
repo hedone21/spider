@@ -58,10 +58,14 @@ struct spider_client* spider_client_create_panel(pid_t pid, int panel_id) {
         client->layer = PANEL2_LAYER;
     }else {
         spider_err("Unsupported panel id\n");
-        return NULL;
+        goto err;
     }
 
     return client;
+
+err:
+    spider_client_free(&client);
+    return NULL;
 }
 
 enum spider_client_layer spider_client_get_layer(struct spider_client *client) {
