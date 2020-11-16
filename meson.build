@@ -11,6 +11,7 @@ add_project_arguments(
 
 
 cc = meson.get_compiler('c')
+dl_dep = meson.get_compiler('c').find_library('dl', required : true)
 wayland_server_dep = dependency('wayland-server')
 wayland_client_dep = dependency('wayland-client')
 wayland_egl_dep = dependency('wayland-egl')

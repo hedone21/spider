@@ -20,37 +20,26 @@
  * SOFTWARE.
  */
 
-#include <stdlib.h>
-#include "server.h"
-#include "spider_assert.h"
+#include "wlroots.h"
 
-struct spider_server* spider_server_create_with_backendpath(char *backend_path) {
-    struct spider_server *server = NULL;
-    server = calloc(1, sizeof(*server));
-    spider_assert(server != NULL);
-
-    server->backend = spider_server_backend_create_with_path(backend_path);
-    spider_assert(server->backend);
-
-    return server;
+bool spider_wlroots_init(struct spider_server *server) {
+    return true;
 }
 
-struct spider_server* spider_server_create() {
-    struct spider_server *server = NULL;
-    server = calloc(1, sizeof(*server));
-    spider_assert(server != NULL);
-
-    server->backend = spider_server_backend_create(WLROOTS_BACKEND);
-    spider_assert(server->backend);
-
-    return server;
+void spider_wlroots_run(struct spider_server *server) {
 }
 
-void spider_server_run() {
+void spider_wlroots_free(struct spider_server *server) {
 }
 
-void spider_server_free(struct spider_server **server) {
-    spider_server_backend_free(&((*server)->backend));
-    free(*server);
-    *server = NULL;
+bool spider_backend_init(struct spider_server *server) {
+    return spider_wlroots_init(server);
+}
+
+void spider_backend_run(struct spider_server *server) {
+    spider_wlroots_run(server);
+}
+
+void spider_backend_free(struct spider_server *server) {
+    spider_wlroots_free(server);
 }

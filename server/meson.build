@@ -5,6 +5,7 @@ libserver_src = [
     'keybindings.c',
     'message.c',
     'server.c',
+    'server_backend.c',
 ]
 
 server_src = [
@@ -12,6 +13,7 @@ server_src = [
 ]
 
 server_dep = [
+    dl_dep,
     glib_dep,
     wayland_server_dep,
     wayland_egl_dep,
@@ -44,4 +46,5 @@ server_exe = executable(
         name_prefix: '',
         )
 
+subdir('wlroots')
 subdir('tests')

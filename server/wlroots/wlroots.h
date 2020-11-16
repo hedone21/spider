@@ -20,37 +20,19 @@
  * SOFTWARE.
  */
 
-#include <stdlib.h>
-#include "server.h"
-#include "spider_assert.h"
+#ifndef SPIDER_WLROOTS_WLROOTS_H
+#define SPIDER_WLROOTS_WLROOTS_H
 
-struct spider_server* spider_server_create_with_backendpath(char *backend_path) {
-    struct spider_server *server = NULL;
-    server = calloc(1, sizeof(*server));
-    spider_assert(server != NULL);
+#include <stdbool.h>
+#include "server/server.h"
 
-    server->backend = spider_server_backend_create_with_path(backend_path);
-    spider_assert(server->backend);
+bool spider_wlroots_init(struct spider_server *server);
+void spider_wlroots_run(struct spider_server *server);
+void spider_wlroots_free(struct spider_server *server);
 
-    return server;
-}
+/* Spider Backend Interface */
+bool spider_backend_init(struct spider_server *server);
+void spider_backend_run(struct spider_server *server);
+void spider_backend_free(struct spider_server *server);
 
-struct spider_server* spider_server_create() {
-    struct spider_server *server = NULL;
-    server = calloc(1, sizeof(*server));
-    spider_assert(server != NULL);
-
-    server->backend = spider_server_backend_create(WLROOTS_BACKEND);
-    spider_assert(server->backend);
-
-    return server;
-}
-
-void spider_server_run() {
-}
-
-void spider_server_free(struct spider_server **server) {
-    spider_server_backend_free(&((*server)->backend));
-    free(*server);
-    *server = NULL;
-}
+#endif /* SPIDER_WLROOTS_WLROOTS_H */

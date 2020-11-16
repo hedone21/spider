@@ -20,37 +20,29 @@
  * SOFTWARE.
  */
 
-#include <stdlib.h>
+#ifndef SPIDER_SERVER_BACKEND_H
+#define SPIDER_SERVER_BACKEND_H
+
+#include <stdbool.h>
 #include "server.h"
-#include "spider_assert.h"
 
-struct spider_server* spider_server_create_with_backendpath(char *backend_path) {
-    struct spider_server *server = NULL;
-    server = calloc(1, sizeof(*server));
-    spider_assert(server != NULL);
+enum spider_server_backend_type {
+    WLROOTS_BACKEND = 0,
+    NUM_OF_BACKEND,
+};
 
-    server->backend = spider_server_backend_create_with_path(backend_path);
-    spider_assert(server->backend);
+struct spider_server_backend {
+    bool (*init)(struct spider_server *server);
+    void (*run)(struct spider_server *server);
+    void (*free)(struct spider_server *server);
 
-    return server;
-}
+    enum spider_server_backend_type backend_type;
 
-struct spider_server* spider_server_create() {
-    struct spider_server *server = NULL;
-    server = calloc(1, sizeof(*server));
-    spider_assert(server != NULL);
+    void *_user_data;
+};
 
-    server->backend = spider_server_backend_create(WLROOTS_BACKEND);
-    spider_assert(server->backend);
+struct spider_server_backend* spider_server_backend_create(enum spider_server_backend_type type);
+struct spider_server_backend* spider_server_backend_create_with_path(char *backend_path);
+void spider_server_backend_free(struct spider_server_backend **backend);
 
-    return server;
-}
-
-void spider_server_run() {
-}
-
-void spider_server_free(struct spider_server **server) {
-    spider_server_backend_free(&((*server)->backend));
-    free(*server);
-    *server = NULL;
-}
+#endif /* SPIDER_SERVER_BACKEND_H */
