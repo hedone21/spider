@@ -49,6 +49,6 @@ struct spider_iter* spider_client_mngr_get_client_iter(struct spider_client_mngr
 unsigned int spider_client_mngr_get_client_cnt(struct spider_client_mngr *mngr);
 struct spider_client* spider_client_mngr_get_shell(struct spider_client_mngr *mngr);
 void spider_client_mngr_remove_client(struct spider_client_mngr *mngr, int idx);
-void spider_client_mngr_free(struct spider_client_mngr *mngr);
+void spider_client_mngr_free(struct spider_client_mngr **mngr);
 
 #endif /* SPIDER_CLIENT_MNGR_H */

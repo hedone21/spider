@@ -253,12 +253,12 @@ void spider_client_mngr_remove_client(struct spider_client_mngr *mngr, int idx) 
     mngr->client_cnt -= 1;
 }
 
-void spider_client_mngr_free(struct spider_client_mngr *mngr) {
-    spider_assert(mngr);
+void spider_client_mngr_free(struct spider_client_mngr **mngr) {
+    spider_assert(*mngr);
     struct spider_iter *iter = NULL;
     struct spider_client *client = NULL;
 
-    iter = spider_client_mngr_get_client_iter(mngr);
+    iter = spider_client_mngr_get_client_iter(*mngr);
     spider_assert(iter);
 
     for (; iter != NULL; iter = iter->next(iter)) {
@@ -270,7 +270,8 @@ void spider_client_mngr_free(struct spider_client_mngr *mngr) {
         spider_client_free(&client);
     }
 
-    g_list_free(mngr->clients);
+    g_list_free((*mngr)->clients);
     free(iter);
-    free(mngr);
+    free(*mngr);
+    *mngr = NULL;
 }
