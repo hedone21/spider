@@ -20,13 +20,16 @@ server_dep = [
     wlr_dep,
 ]
 
+subdir('backend')
+
 server_a = static_library(
-  'spider_server',
-  libserver_src,
-  dependencies: server_dep,
-  include_directories: include_directories('..'),
-  name_prefix: '',
-  )
+        'spider_server',
+        libserver_src,
+        link_with: [common_a, backend_a],
+        dependencies: server_dep,
+        include_directories: include_directories('..'),
+        name_prefix: '',
+        )
 
 server_exe = executable(
         'spider',
@@ -45,5 +48,4 @@ server_exe = executable(
         name_prefix: '',
         )
 
-subdir('backend')
 subdir('tests')

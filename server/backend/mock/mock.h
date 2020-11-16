@@ -20,33 +20,12 @@
  * SOFTWARE.
  */
 
-#include <stdlib.h>
-#include "server.h"
-#include "spider_assert.h"
+#ifndef SPIDER_BACKEND_MOCK_H
+#define SPIDER_BACKEND_MOCK_H
 
-struct spider_server* spider_server_create() {
-    struct spider_server *server = NULL;
-    server = calloc(1, sizeof(*server));
-    spider_assert(server != NULL);
+#include <stdbool.h>
+#include "server/backend/backend.h"
 
-    return server;
-}
+/* Spider Backend Interface */
 
-void spider_server_add_backend(struct spider_server *server, struct spider_backend *backend) {
-    spider_assert(server != NULL);
-    spider_assert(backend != NULL);
-
-    server->backend = backend;
-    server->backend_server = spider_backend_server_get(backend);
-}
-
-/* This is infinite loop */
-void spider_server_run(struct spider_server *server) {
-}
-
-void spider_server_free(struct spider_server **server) {
-    spider_backend_free(&((*server)->backend));
-    spider_backend_server_free(&((*server)->backend_server));
-    free(*server);
-    *server = NULL;
-}
+#endif /* SPIDER_BACKEND_MOCK_H */

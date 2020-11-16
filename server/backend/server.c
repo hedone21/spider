@@ -38,9 +38,13 @@ struct spider_backend_server* spider_backend_server_get(struct spider_backend *b
     return backend;
 }
 
-void spider_backend_server_free(struct spider_backend_server **backend) {
-    if ((*backend)->free)
-        (*backend)->free(*backend, (*backend)->user_data);
-    free(*backend);
-    *backend = NULL;
+void spider_backend_server_free(struct spider_backend_server **backend_server) {
+    if (*backend_server == NULL) {
+        return;
+    }
+
+    if ((*backend_server)->free)
+        (*backend_server)->free(*backend_server, (*backend_server)->user_data);
+    free(*backend_server);
+    *backend_server = NULL;
 }

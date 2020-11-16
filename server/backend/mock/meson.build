@@ -1,9 +1,9 @@
-libbackend_src = [
-    'backend.c',
+libmock_src = [
+    'mock.c',
     'server.c',
 ]
 
-libbackend_dep = [
+libmock_dep = [
     glib_dep,
     wayland_server_dep,
     wayland_egl_dep,
@@ -11,9 +11,9 @@ libbackend_dep = [
     wlr_dep,
 ]
 
-backend_a = static_library(
-        'spider_backend',
-        libbackend_src,
+mock_so = shared_library(
+        '../../spider_backend_mock',
+        libmock_src,
         spider_server_manager_v1_protocol_c,
         spider_server_manager_v1_protocol_h,
         xdg_shell_protocol_c,
@@ -22,10 +22,9 @@ backend_a = static_library(
         xdg_shell_unstable_v6_protocol_h,
         wlr_layer_shell_unstable_v1_protocol_c,
         wlr_layer_shell_unstable_v1_protocol_h,
-        dependencies: libbackend_dep,
-        include_directories: include_directories('../..'),
+        dependencies: libmock_dep,
+        include_directories: include_directories('../../..'),
         name_prefix: '',
         )
 
-subdir('mock')
-# subdir('wlroots')
+# subdir('tests')
