@@ -20,27 +20,22 @@
  * SOFTWARE.
  */
 
-#ifndef SPIDER_SERVER_H
-#define SPIDER_SERVER_H
+#ifndef SPIDER_BACKEND_SERVER_H
+#define SPIDER_BACKEND_SERVER_H
 
 #include <stdbool.h>
-#include "client_mngr.h"
-#include "event.h"
-#include "backend/backend.h"
-#include "backend/server.h"
+#include "server/server.h"
+#include "backend.h"
 
-typedef bool (*cb_event)(struct spider_server *server, void *data);
+struct spider_backend_server {
+    bool (*init)(struct spider_server *server, void *data);
+    void (*run)(struct spider_server *server, void *data);
+    void (*free)(struct spider_server *server, void *data);
 
-struct spider_server {
-    struct spider_client_mngr *mngr; 
-    struct spider_backend *backend;
-    struct spider_backend_server *backend_server;
+    void *user_data;
 };
 
-struct spider_server* spider_server_create();
-void spider_server_add_backend(struct spider_server *server, struct spider_backend *backend);
-void spider_server_register_events(struct spider_server *server, enum spider_event event, cb_event cb, void *data);
-void spider_server_run(struct spider_server *server);
-void spider_server_free(struct spider_server **server);
+struct spider_backend_server* spider_backend_server_get(struct spider_backend *backend);
+void spider_backend_server_free(struct spider_backend_server **backend);
 
-#endif /* SPIDER_SERVER_H */
+#endif /* SPIDER_BACKEND_SERVER_H */

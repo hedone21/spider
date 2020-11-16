@@ -5,7 +5,6 @@ libserver_src = [
     'keybindings.c',
     'message.c',
     'server.c',
-    'server_backend.c',
 ]
 
 server_src = [
@@ -46,5 +45,5 @@ server_exe = executable(
         name_prefix: '',
         )
 
-subdir('wlroots')
+subdir('backend')
 subdir('tests')

@@ -20,27 +20,23 @@
  * SOFTWARE.
  */
 
-#ifndef SPIDER_SERVER_H
-#define SPIDER_SERVER_H
+#ifndef SPIDER_BACKEND_H
+#define SPIDER_BACKEND_H
 
-#include <stdbool.h>
-#include "client_mngr.h"
-#include "event.h"
-#include "backend/backend.h"
-#include "backend/server.h"
-
-typedef bool (*cb_event)(struct spider_server *server, void *data);
-
-struct spider_server {
-    struct spider_client_mngr *mngr; 
-    struct spider_backend *backend;
-    struct spider_backend_server *backend_server;
+enum spider_backend_type {
+    WLROOTS_BACKEND = 0,
+    NUM_OF_BACKEND,
 };
 
-struct spider_server* spider_server_create();
-void spider_server_add_backend(struct spider_server *server, struct spider_backend *backend);
-void spider_server_register_events(struct spider_server *server, enum spider_event event, cb_event cb, void *data);
-void spider_server_run(struct spider_server *server);
-void spider_server_free(struct spider_server **server);
+struct spider_backend {
+    void *handle;
+    enum spider_backend_type type;
+};
 
-#endif /* SPIDER_SERVER_H */
+struct spider_backend* spider_backend_create(enum spider_backend_type type);
+struct spider_backend* spider_backend_create_with_sopath(const char *path);
+void* spider_backend_get_sym(struct spider_backend *backend, const char *sym);
+char* spider_backend_get_path(enum spider_backend_type type);
+void spider_backend_free(struct spider_backend **backend);
+
+#endif /* SPIDER_BACKEND_H */

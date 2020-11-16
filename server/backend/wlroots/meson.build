@@ -11,7 +11,7 @@ libwlroots_dep = [
 ]
 
 wlroots_so = shared_library(
-        '../spider_wlroots',
+        '../../spider_wlroots',
         libwlroots_src,
         spider_server_manager_v1_protocol_c,
         spider_server_manager_v1_protocol_h,

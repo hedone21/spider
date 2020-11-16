@@ -25,9 +25,8 @@
 #include <string.h>
 #include <unistd.h>
 #include <linux/limits.h>
-#include "common/log.h"
-#include "server_backend.h"
-#include "spider_assert.h"
+#include "backend.h"
+#include "server/spider_assert.h"
 
 static char* find_backend_path(const char *backend_name) {
     char *path = calloc(1, sizeof(char) * PATH_MAX);
@@ -60,7 +59,49 @@ out:
     return path;
 }
 
-static char* get_backend_path(enum spider_server_backend_type type) {
+struct spider_backend* spider_backend_create(enum spider_backend_type type) {
+    spider_assert(type < NUM_OF_BACKEND);
+
+    struct spider_backend *backend = NULL;
+    char *backend_path = NULL;
+
+    backend_path = spider_backend_get_path(type);
+    spider_assert(backend_path != NULL);
+
+    backend = spider_backend_create_with_sopath(backend_path);
+    spider_assert(backend != NULL);
+
+    backend->type = type;
+
+    return backend;
+}
+
+struct spider_backend* spider_backend_create_with_sopath(const char *path) {
+    struct spider_backend *backend = NULL;
+    void *backend_handle = NULL;
+
+    backend_handle = dlopen(path, RTLD_LAZY);
+    spider_assert(backend_handle != NULL);
+
+    backend = calloc(1, sizeof(*backend));
+    spider_assert(backend != NULL);
+
+    backend->handle = backend_handle;
+
+    return backend;
+}
+
+void* spider_backend_get_sym(struct spider_backend *backend, const char *sym) {
+    spider_assert(backend != NULL);
+    void *ret = NULL;
+
+    ret = dlsym(backend->handle, sym);
+    spider_assert(ret != NULL);
+
+    return ret;
+}
+
+char* spider_backend_get_path(enum spider_backend_type type) {
     char *path = NULL;
     switch (type) {
         case WLROOTS_BACKEND:
@@ -74,46 +115,6 @@ static char* get_backend_path(enum spider_server_backend_type type) {
     return path;
 }
 
-struct spider_server_backend* spider_server_backend_create_with_path(char *backend_path) {
-    struct spider_server_backend *backend = NULL;
-    void *backend_handle = NULL;
-
-    backend = calloc(1, sizeof(*backend));
-    spider_assert(backend != NULL);
-
-    backend_handle = dlopen(backend_path, RTLD_LAZY);
-    spider_assert(backend_handle != NULL);
-    
-    backend->init = dlsym(backend_handle, "spider_backend_init");
-    spider_assert(backend->init != NULL);
-    backend->run = dlsym(backend_handle, "spider_backend_run");
-    spider_assert(backend->run != NULL);
-    backend->free = dlsym(backend_handle, "spider_backend_free");
-    spider_assert(backend->free != NULL);
-
-    return backend;
-}
-
-struct spider_server_backend* spider_server_backend_create(enum spider_server_backend_type type) {
-    struct spider_server_backend *backend = NULL;
-    char *backend_path = NULL;
-    void *backend_handle = NULL;
-
-    spider_assert(type < NUM_OF_BACKEND);
-
-    backend_path = get_backend_path(type);
-    spider_assert(backend_path != NULL);
-
-    backend = spider_server_backend_create_with_path(backend_path);
-    spider_assert(backend != NULL);
-
-    backend->backend_type = type;
-
-    return backend;
-}
-
-void spider_server_backend_free(struct spider_server_backend **backend) {
-    (*backend)->free(*backend); 
-    free(*backend);
-    *backend = NULL;
+void spider_backend_free(struct spider_backend **backend) {
+    dlclose((*backend)->handle);
 }

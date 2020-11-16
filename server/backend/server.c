@@ -1,16 +1,16 @@
 /*
  * Copyright (c) 2020, 2021 Minyoung.Go <hedone21@gmail.com>
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -20,29 +20,27 @@
  * SOFTWARE.
  */
 
-#ifndef SPIDER_SERVER_BACKEND_H
-#define SPIDER_SERVER_BACKEND_H
-
-#include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <linux/limits.h>
+#include "common/log.h"
 #include "server.h"
+#include "server/spider_assert.h"
 
-enum spider_server_backend_type {
-    WLROOTS_BACKEND = 0,
-    NUM_OF_BACKEND,
-};
+struct spider_backend_server* spider_backend_server_get(struct spider_backend *backend) {
+    struct spider_backend_server *backend_server = NULL;
+    char *backend_path = NULL;
 
-struct spider_server_backend {
-    bool (*init)(struct spider_server *server);
-    void (*run)(struct spider_server *server);
-    void (*free)(struct spider_server *server);
+    backend_server = spider_backend_get_sym(backend, "spider_backend_server");
+    spider_assert(backend != NULL);
 
-    enum spider_server_backend_type backend_type;
+    return backend;
+}
 
-    void *_user_data;
-};
-
-struct spider_server_backend* spider_server_backend_create(enum spider_server_backend_type type);
-struct spider_server_backend* spider_server_backend_create_with_path(char *backend_path);
-void spider_server_backend_free(struct spider_server_backend **backend);
-
-#endif /* SPIDER_SERVER_BACKEND_H */
+void spider_backend_server_free(struct spider_backend_server **backend) {
+    if ((*backend)->free)
+        (*backend)->free(*backend, (*backend)->user_data);
+    free(*backend);
+    *backend = NULL;
+}

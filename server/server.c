@@ -29,7 +29,7 @@ struct spider_server* spider_server_create_with_backendpath(char *backend_path) 
     server = calloc(1, sizeof(*server));
     spider_assert(server != NULL);
 
-    server->backend = spider_server_backend_create_with_path(backend_path);
+    server->backend = spider_backend_create_with_sopath(backend_path);
     spider_assert(server->backend);
 
     return server;
@@ -40,17 +40,19 @@ struct spider_server* spider_server_create() {
     server = calloc(1, sizeof(*server));
     spider_assert(server != NULL);
 
-    server->backend = spider_server_backend_create(WLROOTS_BACKEND);
+    server->backend = spider_backend_create(WLROOTS_BACKEND);
     spider_assert(server->backend);
 
     return server;
 }
 
-void spider_server_run() {
+/* This is infinite loop */
+void spider_server_run(struct spider_server *server) {
 }
 
 void spider_server_free(struct spider_server **server) {
-    spider_server_backend_free(&((*server)->backend));
+    spider_backend_free(&((*server)->backend));
+    spider_backend_server_free(&((*server)->backend_server));
     free(*server);
     *server = NULL;
 }
