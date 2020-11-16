@@ -29,22 +29,12 @@
 #include "server/spider_assert.h"
 
 struct spider_backend_server* spider_backend_server_get(struct spider_backend *backend) {
-    struct spider_backend_server *backend_server = NULL;
-    char *backend_path = NULL;
-
-    backend_server = spider_backend_get_sym(backend, "spider_backend_server");
     spider_assert(backend != NULL);
 
-    return backend;
-}
+    struct spider_backend_server *backend_server = NULL;
 
-void spider_backend_server_free(struct spider_backend_server **backend_server) {
-    if (*backend_server == NULL) {
-        return;
-    }
+    backend_server = spider_backend_get_sym(backend, "spider_backend_server");
+    spider_assert(backend_server != NULL);
 
-    if ((*backend_server)->free)
-        (*backend_server)->free(*backend_server, (*backend_server)->user_data);
-    free(*backend_server);
-    *backend_server = NULL;
+    return backend_server;
 }

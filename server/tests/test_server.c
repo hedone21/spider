@@ -6,15 +6,27 @@
 
 static void test_server_operation() {
     struct spider_server *server = NULL;
+    struct spider_backend_server *backend_server = NULL;
+
+    server = spider_server_create();
+    assert(server != NULL);
+
+    spider_server_run(server);
+
+    spider_server_free(&server);
+}
+
+static void test_server_operation_with_backend() {
+    struct spider_server *server = NULL;
     struct spider_backend *backend = NULL;
     struct spider_backend_server *backend_server = NULL;
 
-    // backend = spider_backend_create_with_sopath("../spider_backend_mock.so");
-    backend = spider_backend_create_with_sopath("/home/go/Git/spider/build/server/spider_backend_mock.so");
+    backend = spider_backend_create_with_sopath("server/spider_backend_mock.so");
     assert(backend != NULL);
 
     server = spider_server_create();
     assert(server != NULL);
+
     spider_server_add_backend(server, backend);
 
     spider_server_run(server);
@@ -24,4 +36,5 @@ static void test_server_operation() {
 
 int main() {
     test_server_operation();
+    test_server_operation_with_backend();
 }

@@ -38,15 +38,31 @@ void spider_server_add_backend(struct spider_server *server, struct spider_backe
 
     server->backend = backend;
     server->backend_server = spider_backend_server_get(backend);
+    spider_assert(server->backend_server);
+
+    if (server->backend_server->init) {
+        server->backend_server->init(server, server->backend_server->data);
+    }
 }
 
 /* This is infinite loop */
 void spider_server_run(struct spider_server *server) {
+
+    if (server->backend_server && server->backend_server->run) {
+        server->backend_server->run(server, server->backend_server->data);
+    }
 }
 
 void spider_server_free(struct spider_server **server) {
+    if (*server == NULL) {
+        return;
+    }
+    
+    if ((*server)->backend_server && (*server)->backend_server->free) {
+        (*server)->backend_server->free(*server, (*server)->backend_server->data);
+    }
     spider_backend_free(&((*server)->backend));
-    spider_backend_server_free(&((*server)->backend_server));
+
     free(*server);
     *server = NULL;
 }

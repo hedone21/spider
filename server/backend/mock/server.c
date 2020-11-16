@@ -21,5 +21,23 @@
  */
 
 #include "server.h"
+#include "server/server.h"
 
-struct spider_backend_server spider_backend_server;
+static bool spider_backend_mock_init(struct spider_server *server, void *data) {
+    return true;
+}
+
+static void spider_backend_mock_run(struct spider_server *server, void *data) {
+
+}
+
+static void spider_backend_mock_free(struct spider_server *server, void *data) {
+
+}
+
+extern struct spider_backend_server spider_backend_server = {
+    .init = spider_backend_mock_init,
+    .run = spider_backend_mock_run,
+    .free = spider_backend_mock_free,
+    .data = NULL,
+};

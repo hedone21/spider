@@ -26,6 +26,6 @@
 #include "mock.h"
 #include "server/backend/server.h"
 
-struct spider_backend_server spider_backend_serverserver;
+struct spider_backend_server spider_backend_server;
 
 #endif /* SPIDER_BACKEND_MOCK_SERVER_H */

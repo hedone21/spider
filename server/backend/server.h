@@ -32,7 +32,7 @@ struct spider_backend_server {
     void (*run)(struct spider_server *server, void *data);
     void (*free)(struct spider_server *server, void *data);
 
-    void *user_data;
+    void *data;
 };
 
 struct spider_backend_server* spider_backend_server_get(struct spider_backend *backend);

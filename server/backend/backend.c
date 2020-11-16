@@ -81,7 +81,10 @@ struct spider_backend* spider_backend_create_with_sopath(const char *path) {
     void *backend_handle = NULL;
 
     backend_handle = dlopen(path, RTLD_LAZY);
-    spider_assert(backend_handle != NULL);
+    if (backend_handle == NULL) {
+        spider_err("Failed to get backend so file (%s)\n", path);
+        return NULL;
+    }
 
     backend = calloc(1, sizeof(*backend));
     spider_assert(backend != NULL);
@@ -116,5 +119,9 @@ char* spider_backend_get_path(enum spider_backend_type type) {
 }
 
 void spider_backend_free(struct spider_backend **backend) {
+    if (*backend == NULL) {
+        return;
+    }
+
     dlclose((*backend)->handle);
 }
