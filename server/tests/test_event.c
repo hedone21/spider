@@ -26,7 +26,6 @@ static void test_event_register_and_get() {
     spider_event_register(event, DEL_CLIENT_EVENT, char_data); 
     spider_event_register(event, FULL_WINDOW_EVENT, char_data); 
     spider_event_register(event, MIN_WINDOW_EVENT, &obj_data); 
-    spider_event_register(event, MAX_WINDOW_EVENT, &obj_data); 
     spider_event_register(event, FULL_WINDOW_EVENT, int_data); 
 
     iter = spider_event_get_iter(event, NEW_CLIENT_EVENT);
@@ -61,15 +60,7 @@ static void test_event_register_and_get() {
     }
 
     iter = spider_event_get_iter(event, MAX_WINDOW_EVENT);
-    assert(iter != NULL);
-    for (; iter != NULL; iter = iter->next(iter)) {
-        ret_pos = spider_iter_get_pos(iter);
-        ret_obj = spider_iter_get_data(iter);
-
-        assert(ret_pos == 0);
-        assert(ret_obj->test_arg1 == 567);
-        assert(ret_obj->test_arg2 == 890);
-    }
+    assert(iter == NULL);
 
     iter = spider_event_get_iter(event, FULL_WINDOW_EVENT);
     assert(iter != NULL);

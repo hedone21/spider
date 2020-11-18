@@ -61,6 +61,11 @@ static struct spider_iter* create_new_iter(struct spider_event *event, enum spid
         return NULL;
     }
 
+    void *data = spider_event_get(event, ev_type, 0);
+    if (data == NULL) {
+        return NULL;
+    }
+
     struct spider_iter *iter = NULL;
     iter = calloc(1, sizeof(*iter));
     spider_assert(iter);
@@ -72,7 +77,7 @@ static struct spider_iter* create_new_iter(struct spider_event *event, enum spid
     pack->ev_type = ev_type;
 
     iter->_user_data = pack;
-    iter->data = spider_event_get(event, ev_type, 0);
+    iter->data = data;
     iter->next = get_iter_next;
 
     return iter;

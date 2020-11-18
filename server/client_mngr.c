@@ -33,6 +33,11 @@ static struct spider_iter* get_iter_next(struct spider_iter *iter);
 
 static struct spider_iter* create_new_iter(struct spider_client_mngr *mngr) {
     struct spider_iter *iter = NULL;
+    void *data = spider_client_mngr_get_client(mngr, 0);
+    if (data == NULL) {
+        return NULL;
+    }
+
     iter = calloc(1, sizeof(*iter));
     spider_assert(iter);
 
