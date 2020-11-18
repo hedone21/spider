@@ -66,3 +66,11 @@ void spider_server_free(struct spider_server **server) {
     free(*server);
     *server = NULL;
 }
+
+bool spider_server_register_event(struct spider_server *server, enum spider_event_type ev_type, void *cb) {
+    return true;
+}
+
+void spider_server_emit_event(struct spider_server *server, enum spider_event_type ev_type, ...) {
+    return;
+}

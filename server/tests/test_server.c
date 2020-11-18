@@ -16,6 +16,9 @@ static void test_server_operation() {
     spider_server_free(&server);
 }
 
+static void test_server_callback(struct spider_server *server, void *data) {
+}
+
 static void test_server_operation_with_backend() {
     struct spider_server *server = NULL;
     struct spider_backend *backend = NULL;

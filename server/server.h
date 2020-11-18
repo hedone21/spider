@@ -23,6 +23,7 @@
 #ifndef SPIDER_SERVER_H
 #define SPIDER_SERVER_H
 
+#include <stdarg.h>
 #include <stdbool.h>
 #include "client_mngr.h"
 #include "event.h"
@@ -35,13 +36,11 @@ struct spider_server {
     struct spider_backend_server *backend_server;
 };
 
-typedef bool (*cb_event)(struct spider_server *server, void *obj, void *data);
-
 struct spider_server* spider_server_create();
 struct spider_server* spider_server_create_with_backend(char *backend);
 void spider_server_run(struct spider_server *server);
 void spider_server_free(struct spider_server **server);
-bool spider_server_register_event(struct spider_server *server, enum spider_event_type ev_type, cb_event cb);
-void spider_server_emit_event(struct spider_server *server, enum spider_event_type ev_type, void *data);
+bool spider_server_register_event(struct spider_server *server, enum spider_event_type ev_type, void *cb);
+void spider_server_emit_event(struct spider_server *server, enum spider_event_type ev_type, ...);
 
 #endif /* SPIDER_SERVER_H */
