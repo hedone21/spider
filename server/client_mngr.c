@@ -194,8 +194,6 @@ struct spider_client* spider_client_mngr_get_client_with_pid(struct spider_clien
     struct spider_client *client = NULL;
 
     iter = spider_client_mngr_get_client_iter(mngr);
-    spider_assert(iter);
-
     for (; iter != NULL; iter = iter->next(iter)) {
         client = spider_iter_get_data(iter);
         if (client == NULL) {
@@ -264,8 +262,6 @@ void spider_client_mngr_free(struct spider_client_mngr **mngr) {
     struct spider_client *client = NULL;
 
     iter = spider_client_mngr_get_client_iter(*mngr);
-    spider_assert(iter);
-
     for (; iter != NULL; iter = iter->next(iter)) {
         client = spider_iter_get_data(iter);
         if (client == NULL) {
