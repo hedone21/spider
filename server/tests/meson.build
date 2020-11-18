@@ -22,6 +22,18 @@ e = executable(
         )
 test('Client Mngr Test', e)
 
+test_event_src = [
+    'test_event.c',
+]
+e = executable(
+        'test_event', 
+        test_event_src,
+        link_with: [common_a, server_a],
+        dependencies: server_dep,
+        include_directories: include_directories('../..'),
+        )
+test('Event Test', e)
+
 test_server_src = [
     'test_server.c',
 ]

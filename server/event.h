@@ -23,13 +23,34 @@
 #ifndef SPIDER_EVENT_H
 #define SPIDER_EVENT_H
 
-enum spider_event {
+#include <stdbool.h>
+#include <glib.h>
+#include "iter.h"
+
+enum spider_event_type {
     IDLE_EVENT = 0,
 
     NEW_CLIENT_EVENT,
     DEL_CLIENT_EVENT,
 
+    NEW_WINDOW_EVENT,
+    MAX_WINDOW_EVENT,
+    MIN_WINDOW_EVENT,
+    FULL_WINDOW_EVENT,
+    DEL_WINDOW_EVENT,
+
     NUM_OF_EVENT
 };
+
+struct spider_event {
+    GList *registered_events[NUM_OF_EVENT];
+};
+
+struct spider_event* spider_event_create();
+bool spider_event_register(struct spider_event *event, enum spider_event_type ev_type, void *obj);
+void* spider_event_get(struct spider_event *event, enum spider_event_type ev_type, unsigned int pos);
+struct spider_iter* spider_event_get_iter(struct spider_event *event, enum spider_event_type ev_type);
+void spider_event_free_iter(struct spider_iter **iter);
+void spider_event_free(struct spider_event **event);
 
 #endif /* SPIDER_EVENT_H */
