@@ -45,19 +45,6 @@ static void test_server_operation_with_callbacks() {
     backend = spider_backend_create_with_sopath("server/spider_backend_mock.so");
     assert(backend != NULL);
 
-    /* Types of callbacks
-     * [Server]
-     * - START_SERVER (struct spider_server *server)
-     * - STOP_SERVER (struct spider_server *server)
-     * 
-     * [Client]
-     * - NEW_CLIENT (struct spider_server *server, struct spider_client *client)
-     * - DEL_CLIENT (struct spider_server *server, struct spider_client *client))
-     *
-     * [Window]
-     * - NEW_WINDOW (struct spider_server *server, unsigned int x, unsigned int y, unsigned int w, unsigned int h)
-     */
-
     server = spider_server_create();
     assert(server != NULL);
 

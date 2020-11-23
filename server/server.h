@@ -43,4 +43,85 @@ void spider_server_free(struct spider_server **server);
 bool spider_server_register_event(struct spider_server *server, enum spider_event_type ev_type, void *cb);
 void spider_server_emit_event(struct spider_server *server, enum spider_event_type ev_type, ...);
 
+/* This callbacks are corresponed to spider_event_type */
+
+/**
+ * @brief Called when a new client is created. MUST be register only one callback. If not, it could be return wrong value
+ * @param server spider server object
+ * @param client_id client id returned from callback
+ * @return boolean Retern true on success, and return false on failure
+ */
+typedef bool (*spider_new_client_cb)(struct spider_server *server, int *client_id);
+
+/**
+ * @brief Called when a new client is deleted
+ * @param server spider server object
+ * @param client_id client id to delete
+ * @return boolean Retern true on success, and return false on failure
+ */
+typedef bool (*spider_del_client_cb)(struct spider_server *server, int client_id);
+
+/**
+ * @brief Called when a new client is created
+ * @param server spider server object
+ * @param client_id client id which own window
+ * @return boolean Retern true on success, and return false on failure
+ */
+typedef bool (*spider_new_window_cb)(struct spider_server *server, int client_id);
+
+/**
+ * @brief Called when a client is maximized
+ * @param server spider server object
+ * @param client_id client id which own window
+ * @param maximized true when window is maximized, and vise versa
+ * @return boolean Retern true on success, and return false on failure
+ */
+typedef bool (*spider_max_window_cb)(struct spider_server *server, int client_id, bool maximized);
+
+/**
+ * @brief Called when a client is minimized
+ * @param server spider server object
+ * @param client_id client id which own window
+ * @param minimized true when window is minimized, and vise versa
+ * @return boolean Retern true on success, and return false on failure
+ */
+typedef bool (*spider_min_window_cb)(struct spider_server *server, int client_id, bool minimized);
+
+/**
+ * @brief Called when a client become a full screen
+ * @param server spider server object
+ * @param client_id client id which own window
+ * @param full true when window is full screen, and vise versa
+ * @return boolean Retern true on success, and return false on failure
+ */
+typedef bool (*spider_full_window_cb)(struct spider_server *server, int client_id, bool full);
+
+/**
+ * @brief Called when a client is moved
+ * @param server spider server object
+ * @param client_id client id which own window
+ * @param x x positional value
+ * @param y y positional value
+ * @return boolean Retern true on success, and return false on failure
+ */
+typedef bool (*spider_move_window_cb)(struct spider_server *server, int client_id, unsigned int x, unsigned int y);
+
+/**
+ * @brief Called when a client is resized
+ * @param server spider server object
+ * @param client_id client id which own window
+ * @param w width
+ * @param h height
+ * @return boolean Retern true on success, and return false on failure
+ */
+typedef bool (*spider_resized_window_cb)(struct spider_server *server, int client_id, unsigned int w, unsigned int h);
+
+/**
+ * @brief Called when a client is deleted
+ * @param server spider server object
+ * @param client_id client id which own window
+ * @return boolean Retern true on success, and return false on failure
+ */
+typedef bool (*spider_del_window_cb)(struct spider_server *server, int client_id);
+
 #endif /* SPIDER_SERVER_H */
