@@ -41,7 +41,7 @@ bool spider_client_mngr_append_client(struct spider_client_mngr *mngr, struct sp
 bool spider_client_mngr_prepend_client(struct spider_client_mngr *mngr, struct spider_client *client);
 bool spider_client_mngr_insert_client(struct spider_client_mngr *mngr, struct spider_client *client, int idx);
 struct spider_client* spider_client_mngr_get_client(struct spider_client_mngr *mngr, int idx);
-struct spider_client* spider_client_mngr_get_client_with_pid(struct spider_client_mngr *mngr, pid_t pid);
+struct spider_client* spider_client_mngr_get_client_with_id(struct spider_client_mngr *mngr, int id);
 struct spider_client* spider_client_mngr_get_client_with_obj(struct spider_client_mngr *mngr, struct spider_client *client);
 struct spider_client* spider_client_mngr_get_shell(struct spider_client_mngr *mngr);
 struct spider_client* spider_client_mngr_get_panel(struct spider_client_mngr *mngr, int idx);
@@ -49,6 +49,8 @@ struct spider_iter* spider_client_mngr_get_client_iter(struct spider_client_mngr
 unsigned int spider_client_mngr_get_client_cnt(struct spider_client_mngr *mngr);
 struct spider_client* spider_client_mngr_get_shell(struct spider_client_mngr *mngr);
 void spider_client_mngr_remove_client(struct spider_client_mngr *mngr, int idx);
+void spider_client_mngr_remove_client_with_id(struct spider_client_mngr *mngr, int id);
+void spider_client_mngr_remove_client_with_obj(struct spider_client_mngr *mngr, struct spider_client *client);
 void spider_client_mngr_free(struct spider_client_mngr **mngr);
 
 #endif /* SPIDER_CLIENT_MNGR_H */

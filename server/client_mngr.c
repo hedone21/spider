@@ -91,9 +91,9 @@ static bool check_client_already_exist(struct spider_client_mngr *mngr, struct s
         return false;
     }
 
-    exist = spider_client_mngr_get_client_with_pid(mngr, client->pid);
+    exist = spider_client_mngr_get_client_with_id(mngr, client->id);
     if (exist) {
-        spider_err("Client pid already exist\n");
+        spider_err("Client id already exist\n");
         return false;
     }
 
@@ -188,7 +188,7 @@ struct spider_client* spider_client_mngr_get_client(struct spider_client_mngr *m
     return g_list_nth_data(mngr->clients, idx);
 }
 
-struct spider_client* spider_client_mngr_get_client_with_pid(struct spider_client_mngr *mngr, pid_t pid) {
+struct spider_client* spider_client_mngr_get_client_with_id(struct spider_client_mngr *mngr, pid_t id) {
     spider_assert(mngr);
     struct spider_iter *iter = NULL;
     struct spider_client *client = NULL;
@@ -200,20 +200,38 @@ struct spider_client* spider_client_mngr_get_client_with_pid(struct spider_clien
             break;
         }
 
-        if (client->pid == pid) {
+        if (client->id == id) {
             break;
         }
 
         client = NULL;
     }
 
-    free(iter);
     return client;
 }
 
 struct spider_client* spider_client_mngr_get_client_with_obj(struct spider_client_mngr *mngr, 
                                                              struct spider_client *client) {
-    return NULL;
+    spider_assert(mngr);
+    spider_assert(client);
+    struct spider_iter *iter = NULL;
+    struct spider_client *client2 = NULL;
+
+    iter = spider_client_mngr_get_client_iter(mngr);
+    for (; iter != NULL; iter = iter->next(iter)) {
+        client2 = spider_iter_get_data(iter);
+        if (client2 == NULL) {
+            break;
+        }
+
+        if (client2 == client) {
+            break;
+        }
+
+        client2 = NULL;
+    }
+
+    return client2;
 }
 
 struct spider_client* spider_client_mngr_get_shell(struct spider_client_mngr *mngr) {
@@ -236,13 +254,9 @@ unsigned int spider_client_mngr_get_client_cnt(struct spider_client_mngr *mngr) 
     return mngr->client_cnt;
 }
 
-void spider_client_mngr_remove_client(struct spider_client_mngr *mngr, int idx) {
+static void remove_client(struct spider_client_mngr *mngr, struct spider_client *client) {
     spider_assert(mngr);
-    struct spider_client *client = spider_client_mngr_get_client(mngr, idx);
-    if (client == NULL) {
-        spider_err("Cannot remove NULL client (idx=%d)\n", idx);
-        return;
-    }
+    spider_assert(client);
 
     mngr->clients = g_list_remove(mngr->clients, client);
     if (mngr->shell_client == client) {
@@ -254,6 +268,39 @@ void spider_client_mngr_remove_client(struct spider_client_mngr *mngr, int idx) 
     }
     spider_client_free(&client);
     mngr->client_cnt -= 1;
+}
+
+void spider_client_mngr_remove_client(struct spider_client_mngr *mngr, int idx) {
+    spider_assert(mngr);
+    struct spider_client *client = spider_client_mngr_get_client(mngr, idx);
+    if (client == NULL) {
+        spider_err("Cannot remove NULL client (idx=%d)\n", idx);
+        return;
+    }
+
+    remove_client(mngr, client);
+}
+
+void spider_client_mngr_remove_client_with_id(struct spider_client_mngr *mngr, int id) {
+    spider_assert(mngr);
+    struct spider_client *client = spider_client_mngr_get_client_with_id(mngr, id);
+    if (client == NULL) {
+        spider_err("Cannot remove NULL client (id=%d)\n", id);
+        return;
+    }
+
+    remove_client(mngr, client);
+}
+
+void spider_client_mngr_remove_client_with_obj(struct spider_client_mngr *mngr, struct spider_client *client) {
+    spider_assert(mngr);
+    client = spider_client_mngr_get_client_with_obj(mngr, client);
+    if (client == NULL) {
+        spider_err("Cannot remove NULL client (obj=%p)\n", client);
+        return;
+    }
+
+    remove_client(mngr, client);
 }
 
 void spider_client_mngr_free(struct spider_client_mngr **mngr) {

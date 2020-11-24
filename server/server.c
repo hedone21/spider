@@ -67,6 +67,13 @@ void spider_server_free(struct spider_server **server) {
     *server = NULL;
 }
 
+struct spider_client_mngr* spider_server_get_client_mngr(struct spider_server *server) {
+    spider_assert(server != NULL);
+    spider_assert(server->mngr != NULL);
+
+    return server->mngr;
+}
+
 bool spider_server_register_event(struct spider_server *server, enum spider_event_type ev_type, void *cb) {
     return true;
 }

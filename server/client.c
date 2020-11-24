@@ -24,7 +24,7 @@
 #include "client.h"
 #include "common/log.h"
 
-struct spider_client* spider_client_create(pid_t pid) {
+struct spider_client* spider_client_create(int id) {
     struct spider_client *client = NULL;
 
     client = calloc(1, sizeof(*client));
@@ -33,25 +33,25 @@ struct spider_client* spider_client_create(pid_t pid) {
         return NULL;
     }
 
-    client->pid = pid;
+    client->id = id;
     client->layer = CLIENT_LAYER;
 
     return client;
 }
 
-struct spider_client* spider_client_create_shell(pid_t pid) {
+struct spider_client* spider_client_create_shell(int id) {
     struct spider_client *client = NULL;
 
-    client = spider_client_create(pid);
+    client = spider_client_create(id);
     client->layer = SHELL_LAYER;
 
     return client;
 }
 
-struct spider_client* spider_client_create_panel(pid_t pid, int panel_id) {
+struct spider_client* spider_client_create_panel(int id, int panel_id) {
     struct spider_client *client = NULL;
 
-    client = spider_client_create(pid);
+    client = spider_client_create(id);
     if (panel_id == 0) {
         client->layer = PANEL1_LAYER;
     }else if (panel_id == 1) {

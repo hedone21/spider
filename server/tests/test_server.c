@@ -34,7 +34,25 @@ static void test_server_operation_with_backend() {
     spider_server_free(&server);
 }
 
-static void test_server_callback(struct spider_server *server, void *data) {
+static bool new_client_cb(struct spider_server *server, int *client_id) {
+    static int id = 0;
+    assert(server != NULL);
+    struct spider_client *client = spider_client_create(id++);
+    assert(client != NULL);
+    struct spider_client_mngr *mngr = spider_server_get_client_mngr(server);
+    assert(mngr != NULL);
+    spider_client_mngr_append_client(mngr, client);
+}
+
+static bool del_client_cb(struct spider_server *server, int client_id) {
+    assert(server != NULL);
+    struct spider_client_mngr *mngr = spider_server_get_client_mngr(server);
+    assert(mngr != NULL);
+    spider_client_mngr_remove_client_with_id(mngr, client_id);
+}
+
+static bool new_window_cb(struct spider_server *server, int client_id) {
+
 }
 
 static void test_server_operation_with_callbacks() {
@@ -47,6 +65,9 @@ static void test_server_operation_with_callbacks() {
 
     server = spider_server_create();
     assert(server != NULL);
+
+    spider_server_register_event(server, NEW_CLIENT_EVENT, new_client_cb);
+    spider_server_register_event(server, DEL_CLIENT_EVENT, del_client_cb);
 
     spider_server_add_backend(server, backend);
 

@@ -37,12 +37,12 @@ enum spider_client_layer {
 struct spider_client {
     struct spider_window window;
     enum spider_client_layer layer;
-    pid_t pid;
+    int id;
 };
 
-struct spider_client* spider_client_create(pid_t pid);
-struct spider_client* spider_client_create_shell(pid_t pid);
-struct spider_client* spider_client_create_panel(pid_t pid, int panel_id);
+struct spider_client* spider_client_create(int id);
+struct spider_client* spider_client_create_shell(int id);
+struct spider_client* spider_client_create_panel(int id, int panel_id);
 enum spider_client_layer spider_client_get_layer(struct spider_client *client);
 void spider_client_free(struct spider_client **client);
 

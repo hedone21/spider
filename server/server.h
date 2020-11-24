@@ -40,6 +40,7 @@ struct spider_server* spider_server_create();
 struct spider_server* spider_server_create_with_backend(char *backend);
 void spider_server_run(struct spider_server *server);
 void spider_server_free(struct spider_server **server);
+struct spider_client_mngr* spider_server_get_client_mngr(struct spider_server *server);
 bool spider_server_register_event(struct spider_server *server, enum spider_event_type ev_type, void *cb);
 void spider_server_emit_event(struct spider_server *server, enum spider_event_type ev_type, ...);
 
