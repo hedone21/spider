@@ -52,7 +52,91 @@ static bool del_client_cb(struct spider_server *server, int client_id) {
 }
 
 static bool new_window_cb(struct spider_server *server, int client_id) {
+    assert(server != NULL);
+    struct spider_client_mngr *mngr = spider_server_get_client_mngr(server);
+    assert(mngr != NULL);
+    struct spider_client *client = spider_client_mngr_get_client_with_id(mngr, client_id);
+    assert(client != NULL);
+    struct spider_window *window = spider_client_get_window(client);
+    assert(window != NULL);
+}
 
+static bool max_window_cb(struct spider_server *server, int client_id, bool maximized) {
+    assert(server != NULL);
+    struct spider_client_mngr *mngr = spider_server_get_client_mngr(server);
+    assert(mngr != NULL);
+    struct spider_client *client = spider_client_mngr_get_client_with_id(mngr, client_id);
+    assert(client != NULL);
+    struct spider_window *window = spider_client_get_window(client);
+    assert(window != NULL);
+    spider_window_maximize(window, maximized);
+    assert(spider_window_is_maximized(window) == maximized);
+    assert(spider_window_is_minimized(window) != maximized);
+    assert(spider_window_is_fullscreen(window) != maximized);
+}
+
+static bool min_window_cb(struct spider_server *server, int client_id, bool minimized) {
+    assert(server != NULL);
+    struct spider_client_mngr *mngr = spider_server_get_client_mngr(server);
+    assert(mngr != NULL);
+    struct spider_client *client = spider_client_mngr_get_client_with_id(mngr, client_id);
+    assert(client != NULL);
+    struct spider_window *window = spider_client_get_window(client);
+    assert(window != NULL);
+    spider_window_minimize(window, minimized);
+    assert(spider_window_is_maximized(window) != minimized);
+    assert(spider_window_is_minimized(window) == minimized);
+    assert(spider_window_is_fullscreen(window) != minimized);
+}
+
+static bool full_window_cb(struct spider_server *server, int client_id, bool is_full) {
+    assert(server != NULL);
+    struct spider_client_mngr *mngr = spider_server_get_client_mngr(server);
+    assert(mngr != NULL);
+    struct spider_client *client = spider_client_mngr_get_client_with_id(mngr, client_id);
+    assert(client != NULL);
+    struct spider_window *window = spider_client_get_window(client);
+    assert(window != NULL);
+    spider_window_full(window, is_full);
+    assert(spider_window_is_maximized(window) != is_full);
+    assert(spider_window_is_minimized(window) != is_full);
+    assert(spider_window_is_fullscreen(window) == is_full);
+}
+
+static bool move_window_cb(struct spider_server *server, int client_id, unsigned int x, unsigned int y) {
+    assert(server != NULL);
+    struct spider_client_mngr *mngr = spider_server_get_client_mngr(server);
+    assert(mngr != NULL);
+    struct spider_client *client = spider_client_mngr_get_client_with_id(mngr, client_id);
+    assert(client != NULL);
+    struct spider_window *window = spider_client_get_window(client);
+    assert(window != NULL);
+    spider_window_move(window, x, y);
+    assert(window->x == x);
+    assert(window->y == y);
+}
+
+static bool resize_window_cb(struct spider_server *server, int client_id, unsigned int w, unsigned int h) {
+    assert(server != NULL);
+    struct spider_client_mngr *mngr = spider_server_get_client_mngr(server);
+    assert(mngr != NULL);
+    struct spider_client *client = spider_client_mngr_get_client_with_id(mngr, client_id);
+    assert(client != NULL);
+    struct spider_window *window = spider_client_get_window(client);
+    assert(window != NULL);
+    spider_window_resize(window, w, h);
+    assert(window->w == w);
+    assert(window->h == h);
+}
+
+static bool del_window_cb(struct spider_server *server, int client_id) {
+    assert(server != NULL);
+    struct spider_client_mngr *mngr = spider_server_get_client_mngr(server);
+    assert(mngr != NULL);
+    struct spider_client *client = spider_client_mngr_get_client_with_id(mngr, client_id);
+    assert(client != NULL);
+    struct spider_window *window = spider_client_get_window(client);
+    assert(window != NULL);
 }
 
 static void test_server_operation_with_callbacks() {

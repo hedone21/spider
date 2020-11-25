@@ -22,6 +22,7 @@
 
 #include <stdlib.h>
 #include "client.h"
+#include "spider_assert.h"
 #include "common/log.h"
 
 struct spider_client* spider_client_create(int id) {
@@ -69,7 +70,13 @@ err:
 }
 
 enum spider_client_layer spider_client_get_layer(struct spider_client *client) {
+    spider_assert(client != NULL);
     return client->layer;
+}
+
+struct spider_window* spider_client_get_window(struct spider_client *client) {
+    spider_assert(client != NULL);
+    return &(client->window);
 }
 
 void spider_client_free(struct spider_client **client) {

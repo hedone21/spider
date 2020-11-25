@@ -6,6 +6,7 @@ libserver_src = [
     'keybindings.c',
     'message.c',
     'server.c',
+    'window.c',
 ]
 
 server_src = [

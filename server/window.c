@@ -20,31 +20,55 @@
  * SOFTWARE.
  */
 
-#ifndef SPIDER_CLIENT_H
-#define SPIDER_CLIENT_H
-
-#include <unistd.h>
+#include "spider_assert.h"
 #include "window.h"
 
-enum spider_client_layer {
-    SHELL_LAYER = 0, /* == BACKGROUND */
-    PANEL1_LAYER,
-    PANEL2_LAYER,
-    CLIENT_LAYER,
-    OVERLAY_LAYER,
-};
+void spider_window_move(struct spider_window *window, unsigned int x, unsigned int y) {
+    spider_assert(window);
 
-struct spider_client {
-    struct spider_window window;
-    enum spider_client_layer layer;
-    int id;
-};
+    window->x = x;
+    window->y = y;
+}
 
-struct spider_client* spider_client_create(int id);
-struct spider_client* spider_client_create_shell(int id);
-struct spider_client* spider_client_create_panel(int id, int panel_id);
-enum spider_client_layer spider_client_get_layer(struct spider_client *client);
-struct spider_window* spider_client_get_window(struct spider_client *client);
-void spider_client_free(struct spider_client **client);
+void spider_window_resize(struct spider_window *window, unsigned int w, unsigned int h) {
+    spider_assert(window);
 
-#endif /* SPIDER_CLIENT_H */
+    window->w = w;
+    window->h = h;
+}
+
+void spider_window_maximize(struct spider_window *window, bool is_maximized) {
+    spider_assert(window);
+
+    window->is_maximized = is_maximized;
+}
+
+void spider_window_minimize(struct spider_window *window, bool is_minimized) {
+    spider_assert(window);
+
+    window->is_minimized = is_minimized;
+}
+
+void spider_window_full(struct spider_window *window, bool is_full) {
+    spider_assert(window);
+
+    window->is_full = is_full;
+}
+
+bool spider_window_is_maximized(struct spider_window *window) {
+    spider_assert(window);
+
+    return window->is_maximized;
+}
+
+bool spider_window_is_minimized(struct spider_window *window) {
+    spider_assert(window);
+
+    return window->is_minimized;
+}
+
+bool spider_window_is_fullscreen(struct spider_window *window) {
+    spider_assert(window);
+
+    return window->is_full;
+}

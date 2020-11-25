@@ -23,7 +23,24 @@
 #ifndef SPIDER_WINDOW_H
 #define SPIDER_WINDOW_H
 
+#include <stdbool.h>
+
 struct spider_window {
+    unsigned int x, y;
+    unsigned int w, h;
+
+    bool is_maximized;
+    bool is_minimized;
+    bool is_full;
 };
+
+void spider_window_move(struct spider_window *window, unsigned int x, unsigned int y);
+void spider_window_resize(struct spider_window *window, unsigned int w, unsigned int h);
+void spider_window_maximize(struct spider_window *window, bool is_maximized);
+void spider_window_minimize(struct spider_window *window, bool is_minimized);
+void spider_window_full(struct spider_window *window, bool is_full);
+bool spider_window_is_maximized(struct spider_window *window);
+bool spider_window_is_minimized(struct spider_window *window);
+bool spider_window_is_fullscreen(struct spider_window *window);
 
 #endif /* SPIDER_WINDOW_H */
