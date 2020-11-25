@@ -20,7 +20,9 @@
  * SOFTWARE.
  */
 
+#include <stdarg.h>
 #include <stdlib.h>
+#include "iter.h"
 #include "server.h"
 #include "spider_assert.h"
 
@@ -75,9 +77,98 @@ struct spider_client_mngr* spider_server_get_client_mngr(struct spider_server *s
 }
 
 bool spider_server_register_event(struct spider_server *server, enum spider_event_type ev_type, void *cb) {
+    spider_assert(server != NULL);
+    spider_assert(cb != NULL);
+    spider_assert(ev_type < NUM_OF_EVENT && ev_type >= 0);
+
+    server->events[ev_type] = g_list_append(server->events[ev_type], cb);
+
     return true;
 }
 
 void spider_server_emit_event(struct spider_server *server, enum spider_event_type ev_type, ...) {
+    spider_assert(server != NULL);
+    spider_assert(ev_type < NUM_OF_EVENT && ev_type >= 0);
+
+    const unsigned int max_args = 3;
+    unsigned int num_of_args = 0;
+    void *args[max_args];
+
+    switch(ev_type) {
+        case NEW_CLIENT_EVENT:
+            num_of_args = 1;
+            break;
+        case DEL_CLIENT_EVENT:
+            num_of_args = 1;
+            break;
+        case NEW_WINDOW_EVENT:
+            num_of_args = 1;
+            break;
+        case MAX_WINDOW_EVENT:
+            num_of_args = 2;
+            break;
+        case MIN_WINDOW_EVENT:
+            num_of_args = 2;
+            break;
+        case FULL_WINDOW_EVENT:
+            num_of_args = 2;
+            break;
+        case MOVE_WINDOW_EVENT:
+            num_of_args = 3;
+            break;
+        case RESIZE_WINDOW_EVENT:
+            num_of_args = 3;
+            break;
+        case DEL_WINDOW_EVENT:
+            num_of_args = 1;
+            break;
+    }
+
+    va_list ap;
+    va_start(ap, ev_type);
+
+    for (int i = 0; i < num_of_args; i++) {
+        args[i] = va_arg(ap, void *);
+    }
+    
+    va_end(ap);
+
+    for (int i = 0;;i++) {
+        void *func = g_list_nth_data(server->events[ev_type], i);
+        if (func == NULL) {
+            break;
+        }
+
+        switch(ev_type) {
+            case NEW_CLIENT_EVENT:
+                ((spider_new_client_cb)func)(server, args[0]);
+                break;
+            case DEL_CLIENT_EVENT:
+                ((spider_del_client_cb)func)(server, args[0]);
+                break;
+            case NEW_WINDOW_EVENT:
+                ((spider_new_window_cb)func)(server, args[0]);
+                break;
+            case MAX_WINDOW_EVENT:
+                ((spider_max_window_cb)func)(server, args[0], args[1]);
+                break;
+            case MIN_WINDOW_EVENT:
+                ((spider_min_window_cb)func)(server, args[0], args[1]);
+                break;
+            case FULL_WINDOW_EVENT:
+                ((spider_full_window_cb)func)(server, args[0], args[1]);
+                break;
+            case MOVE_WINDOW_EVENT:
+                ((spider_move_window_cb)func)(server, args[0], args[1], args[2]);
+                break;
+            case RESIZE_WINDOW_EVENT:
+                ((spider_resize_window_cb)func)(server, args[0], args[1], args[2]);
+                break;
+            case DEL_WINDOW_EVENT:
+                ((spider_del_window_cb)func)(server, args[0]);
+                break;
+        }
+    }
+
     return;
 }

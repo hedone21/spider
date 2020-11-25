@@ -25,6 +25,7 @@
 
 #include <stdarg.h>
 #include <stdbool.h>
+#include <glib.h>
 #include "client_mngr.h"
 #include "event.h"
 #include "backend/backend.h"
@@ -34,6 +35,7 @@ struct spider_server {
     struct spider_client_mngr *mngr; 
     struct spider_backend *backend;
     struct spider_backend_server *backend_server;
+    GList* events[NUM_OF_EVENT];
 };
 
 struct spider_server* spider_server_create();
@@ -115,7 +117,7 @@ typedef bool (*spider_move_window_cb)(struct spider_server *server, int client_i
  * @param h height
  * @return boolean Retern true on success, and return false on failure
  */
-typedef bool (*spider_resized_window_cb)(struct spider_server *server, int client_id, unsigned int w, unsigned int h);
+typedef bool (*spider_resize_window_cb)(struct spider_server *server, int client_id, unsigned int w, unsigned int h);
 
 /**
  * @brief Called when a client is deleted

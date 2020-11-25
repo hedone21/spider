@@ -152,6 +152,13 @@ static void test_server_operation_with_callbacks() {
 
     spider_server_register_event(server, NEW_CLIENT_EVENT, new_client_cb);
     spider_server_register_event(server, DEL_CLIENT_EVENT, del_client_cb);
+    spider_server_register_event(server, NEW_WINDOW_EVENT, new_window_cb);
+    spider_server_register_event(server, MAX_WINDOW_EVENT, max_window_cb);
+    spider_server_register_event(server, MIN_WINDOW_EVENT, min_window_cb);
+    spider_server_register_event(server, FULL_WINDOW_EVENT, full_window_cb);
+    spider_server_register_event(server, MOVE_WINDOW_EVENT, move_window_cb);
+    spider_server_register_event(server, RESIZE_WINDOW_EVENT, resize_window_cb);
+    spider_server_register_event(server, DEL_WINDOW_EVENT, del_window_cb);
 
     spider_server_add_backend(server, backend);
 
