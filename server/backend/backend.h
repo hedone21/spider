@@ -33,6 +33,7 @@ struct spider_backend {
     enum spider_backend_type type;
 
     struct spider_backend_server *server;
+    struct spider_backend_client *client;
 };
 
 struct spider_backend* spider_backend_create(enum spider_backend_type type);

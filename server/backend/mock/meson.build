@@ -1,5 +1,6 @@
 libmock_src = [
     'mock.c',
+    'client.c',
     'server.c',
 ]
 

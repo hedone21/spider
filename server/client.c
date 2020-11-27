@@ -24,6 +24,7 @@
 #include "client.h"
 #include "spider_assert.h"
 #include "common/log.h"
+#include "server/backend/client.h"
 
 struct spider_client* spider_client_create(int id) {
     struct spider_client *client = NULL;
@@ -69,6 +70,17 @@ err:
     return NULL;
 }
 
+void spider_client_add_backend(struct spider_client *client, struct spider_backend *backend) {
+    spider_assert(client != NULL);
+    spider_assert(backend != NULL);
+    if (client->backend != NULL) {
+        spider_err("Client backend is already exist\n");
+    }
+
+    client->backend = spider_backend_client_get(backend);
+    client->backend->new(client, client->data);
+}
+
 enum spider_client_layer spider_client_get_layer(struct spider_client *client) {
     spider_assert(client != NULL);
     return client->layer;
@@ -77,9 +89,25 @@ enum spider_client_layer spider_client_get_layer(struct spider_client *client) {
 struct spider_window* spider_client_get_window(struct spider_client *client) {
     spider_assert(client != NULL);
     return &(client->window);
+} 
+
+void spider_client_draw(struct spider_client *client) {
+    spider_assert(client != NULL);
+
+    if (client->backend) {
+        client->backend->draw(client, client->data);
+    }
 }
 
 void spider_client_free(struct spider_client **client) {
+    if (*client == NULL) {
+        return;
+    }
+
+    if ((*client)->backend) {
+        (*client)->backend->free(*client, (*client)->data);
+    }
+
     free(*client);
     *client = NULL;
 }

@@ -20,37 +20,33 @@
  * SOFTWARE.
  */
 
-#ifndef SPIDER_CLIENT_H
-#define SPIDER_CLIENT_H
+#include "client.h"
+#include "server/event.h"
+#include "server/client.h"
+#include "server/server.h"
+#include "common/log.h"
 
-#include <unistd.h>
-#include "window.h"
-#include "server/backend/backend.h"
+static bool new_client(struct spider_client *client, void *data) {
+    spider_log("mock client new\n");
 
-enum spider_client_layer {
-    SHELL_LAYER = 0, /* == BACKGROUND */
-    PANEL1_LAYER,
-    PANEL2_LAYER,
-    CLIENT_LAYER,
-    OVERLAY_LAYER,
+    return true;
+}
+
+static bool draw_client(struct spider_client *client, void *data) {
+    spider_log("mock client draw\n");
+
+    return true;
+}
+
+static bool free_client(struct spider_client *client, void *data) {
+    spider_log("mock client free\n");
+
+    return true;
+}
+
+extern struct spider_backend_client spider_backend_client = {
+    .new = new_client,
+    .draw = draw_client,
+    .free = free_client,
+    .data = NULL,
 };
-
-struct spider_client {
-    struct spider_window window;
-    enum spider_client_layer layer;
-    int id;
-
-    struct spider_backend_client *backend;
-    void *data;
-};
-
-struct spider_client* spider_client_create(int id);
-struct spider_client* spider_client_create_shell(int id);
-struct spider_client* spider_client_create_panel(int id, int panel_id);
-void spider_client_add_backend(struct spider_client *client, struct spider_backend *backend);
-enum spider_client_layer spider_client_get_layer(struct spider_client *client);
-struct spider_window* spider_client_get_window(struct spider_client *client);
-void spider_client_draw(struct spider_client *client);
-void spider_client_free(struct spider_client **client);
-
-#endif /* SPIDER_CLIENT_H */

@@ -93,6 +93,8 @@ struct spider_backend* spider_backend_create_with_sopath(const char *path) {
     backend->handle = backend_handle;
     backend->server = spider_backend_server_get(backend);
     spider_assert(backend->server);
+    backend->client = spider_backend_client_get(backend);
+    spider_assert(backend->client);
 
     return backend;
 }

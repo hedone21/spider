@@ -116,6 +116,12 @@ void spider_server_emit_event(struct spider_server *server, enum spider_event_ty
         case NEW_CLIENT_EVENT:
             num_of_args = 1;
             break;
+        case NEW_CLIENT_SHELL_EVENT:
+            num_of_args = 1;
+            break;
+        case NEW_CLIENT_PANEL_EVENT:
+            num_of_args = 1;
+            break;
         case DEL_CLIENT_EVENT:
             num_of_args = 1;
             break;
@@ -140,6 +146,9 @@ void spider_server_emit_event(struct spider_server *server, enum spider_event_ty
         case DEL_WINDOW_EVENT:
             num_of_args = 1;
             break;
+        case RENDER_EVENT:
+            num_of_args = 0;
+            break;
     }
 
     va_list ap;
@@ -159,6 +168,12 @@ void spider_server_emit_event(struct spider_server *server, enum spider_event_ty
 
         switch(ev_type) {
             case NEW_CLIENT_EVENT:
+                ((spider_new_client_cb)func)(server, args[0]);
+                break;
+            case NEW_CLIENT_SHELL_EVENT:
+                ((spider_new_client_cb)func)(server, args[0]);
+                break;
+            case NEW_CLIENT_PANEL_EVENT:
                 ((spider_new_client_cb)func)(server, args[0]);
                 break;
             case DEL_CLIENT_EVENT:
@@ -184,6 +199,9 @@ void spider_server_emit_event(struct spider_server *server, enum spider_event_ty
                 break;
             case DEL_WINDOW_EVENT:
                 ((spider_del_window_cb)func)(server, args[0]);
+                break;
+            case RENDER_EVENT:
+                ((spider_render_cb)func)(server);
                 break;
         }
     }

@@ -42,6 +42,9 @@ static bool new_client_cb(struct spider_server *server, int *client_id) {
     assert(server != NULL);
     struct spider_client *client = spider_client_create(id);
     assert(client != NULL);
+    if (server->backend) {
+        spider_client_add_backend(client, server->backend);
+    }
     struct spider_client_mngr *mngr = spider_server_get_client_mngr(server);
     assert(mngr != NULL);
     spider_client_mngr_append_client(mngr, client);
@@ -166,6 +169,19 @@ static bool del_window_cb(struct spider_server *server, int client_id) {
     assert(window != NULL);
 }
 
+static bool render_cb(struct spider_server *server) {
+    spider_log("render\n");
+
+    assert(server != NULL);
+    struct spider_client_mngr *mngr = spider_server_get_client_mngr(server);
+    assert(mngr != NULL);
+    struct spider_iter *iter = spider_client_mngr_get_client_iter(mngr);
+    for (; iter != NULL; iter = iter->next(iter)) {
+        struct spider_client *client = spider_iter_get_data(iter);
+        spider_client_draw(client);
+    }
+}
+
 static void test_server_operation_with_callbacks() {
     struct spider_server *server = NULL;
     struct spider_backend *backend = NULL;
@@ -186,6 +202,7 @@ static void test_server_operation_with_callbacks() {
     spider_server_register_event(server, MOVE_WINDOW_EVENT, move_window_cb);
     spider_server_register_event(server, RESIZE_WINDOW_EVENT, resize_window_cb);
     spider_server_register_event(server, DEL_WINDOW_EVENT, del_window_cb);
+    spider_server_register_event(server, RENDER_EVENT, render_cb);
 
     spider_server_add_backend(server, backend);
 

@@ -8,6 +8,7 @@ libserver_src = [
     'server.c',
     'window.c',
     'backend/backend.c',
+    'backend/client.c',
     'backend/server.c',
 ]
 

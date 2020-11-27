@@ -30,8 +30,13 @@
 enum spider_event_type {
     IDLE_EVENT = 0,
 
+    /* client event */
     NEW_CLIENT_EVENT,
+    NEW_CLIENT_SHELL_EVENT,
+    NEW_CLIENT_PANEL_EVENT,
     DEL_CLIENT_EVENT,
+
+    /* window event */
     NEW_WINDOW_EVENT,
     MAX_WINDOW_EVENT,
     MIN_WINDOW_EVENT,
@@ -39,6 +44,17 @@ enum spider_event_type {
     MOVE_WINDOW_EVENT,
     RESIZE_WINDOW_EVENT,
     DEL_WINDOW_EVENT,
+
+    /* input event */
+    MOVE_INPUT_CURSOR_EVENT,
+    ABSMOVE_INPUT_CURSOR_EVENT,
+    CLICK_INPUT_CURSOR_EVENT,
+    AXIS_INPUT_CURSOR_EVENT,
+    HANDLE_MOD_INPUT_KEYBOARD_EVENT,
+    HANDLE_KEY_INPUT_KEYBOARD_EVENT,
+
+    /* global event */
+    RENDER_EVENT,
 
     NUM_OF_EVENT
 };

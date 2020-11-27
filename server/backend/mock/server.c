@@ -109,6 +109,7 @@ static void spider_backend_mock_run(struct spider_server *server, void *data) {
         }
 
         usleep(16 * 1000);
+        spider_server_emit_event(server, RENDER_EVENT);
     }
 }
 

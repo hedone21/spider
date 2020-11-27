@@ -125,4 +125,11 @@ typedef bool (*spider_resize_window_cb)(struct spider_server *server, int client
  */
 typedef bool (*spider_del_window_cb)(struct spider_server *server, int client_id);
 
+/**
+ * @brief Called when frame is drawed
+ * @param server spider server object
+ * @return boolean Retern true on success, and return false on failure
+ */
+typedef bool (*spider_render_cb)(struct spider_server *server);
+
 #endif /* SPIDER_SERVER_H */
