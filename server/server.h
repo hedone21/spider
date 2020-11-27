@@ -29,12 +29,10 @@
 #include "client_mngr.h"
 #include "event.h"
 #include "backend/backend.h"
-#include "backend/server.h"
 
 struct spider_server {
     struct spider_client_mngr *mngr; 
     struct spider_backend *backend;
-    struct spider_backend_server *backend_server;
     GList* events[NUM_OF_EVENT];
 };
 

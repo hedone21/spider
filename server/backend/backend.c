@@ -26,6 +26,7 @@
 #include <unistd.h>
 #include <linux/limits.h>
 #include "backend.h"
+#include "server.h"
 #include "server/spider_assert.h"
 
 static char* find_backend_path(const char *backend_name) {
@@ -90,6 +91,8 @@ struct spider_backend* spider_backend_create_with_sopath(const char *path) {
     spider_assert(backend != NULL);
 
     backend->handle = backend_handle;
+    backend->server = spider_backend_server_get(backend);
+    spider_assert(backend->server);
 
     return backend;
 }

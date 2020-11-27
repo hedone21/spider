@@ -24,6 +24,8 @@
 #include <stdlib.h>
 #include "iter.h"
 #include "server.h"
+#include "backend/server.h"
+#include "common/log.h"
 #include "spider_assert.h"
 
 struct spider_server* spider_server_create() {
@@ -39,19 +41,26 @@ void spider_server_add_backend(struct spider_server *server, struct spider_backe
     spider_assert(backend != NULL);
 
     server->backend = backend;
-    server->backend_server = spider_backend_server_get(backend);
-    spider_assert(server->backend_server);
 
-    if (server->backend_server->init) {
-        server->backend_server->init(server, server->backend_server->data);
+    struct spider_backend_server *backend_server = backend->server;
+    if (backend_server && backend_server->init) {
+        backend_server->init(server, backend_server->data);
     }
 }
 
 /* This is infinite loop */
 void spider_server_run(struct spider_server *server) {
+    spider_assert(server != NULL);
 
-    if (server->backend_server && server->backend_server->run) {
-        server->backend_server->run(server, server->backend_server->data);
+    if (server->backend == NULL) {
+        spider_err("NULL Backend\n");
+        return;
+    }
+
+    struct spider_backend_server *backend_server = server->backend->server;
+
+    if (backend_server && backend_server->run) {
+        backend_server->run(server, backend_server->data);
     }
 }
 
@@ -60,8 +69,14 @@ void spider_server_free(struct spider_server **server) {
         return;
     }
     
-    if ((*server)->backend_server && (*server)->backend_server->free) {
-        (*server)->backend_server->free(*server, (*server)->backend_server->data);
+    if ((*server)->backend == NULL) {
+        return;
+    }
+
+    struct spider_backend_server *backend_server = (*server)->backend->server;
+
+    if (backend_server && backend_server->free) {
+        backend_server->free(*server, backend_server->data);
     }
     spider_backend_free(&((*server)->backend));
 
