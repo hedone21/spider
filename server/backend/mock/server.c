@@ -38,6 +38,12 @@ static void spider_backend_mock_run(struct spider_server *server, void *data) {
     const unsigned int new_client1_cnt = 10;
     const unsigned int new_client2_cnt = 20;
     const unsigned int new_client3_cnt = 30;
+    const unsigned int max_window_cnt = 50;
+    const unsigned int min_window_cnt = 60;
+    const unsigned int full_window_cnt = 70;
+    const unsigned int unfull_window_cnt = 80;
+    const unsigned int resize_window_cnt = 90;
+    const unsigned int move_window_cnt = 90;
     const unsigned int del_client1_cnt = 170;
     const unsigned int del_client2_cnt = 190;
     const unsigned int del_client3_cnt = 180;
@@ -50,25 +56,55 @@ static void spider_backend_mock_run(struct spider_server *server, void *data) {
     for (loop_cnt = 0; loop_cnt < max_loop_cnt; loop_cnt++) {
         if (loop_cnt == new_client1_cnt) {
             spider_server_emit_event(server, NEW_CLIENT_EVENT, &client_id[0]);
+            spider_server_emit_event(server, NEW_WINDOW_EVENT, client_id[0]);
         }
 
         if (loop_cnt == new_client2_cnt) {
             spider_server_emit_event(server, NEW_CLIENT_EVENT, &client_id[1]);
+            spider_server_emit_event(server, NEW_WINDOW_EVENT, client_id[1]);
         }
 
         if (loop_cnt == new_client3_cnt) {
             spider_server_emit_event(server, NEW_CLIENT_EVENT, &client_id[2]);
+            spider_server_emit_event(server, NEW_WINDOW_EVENT, client_id[2]);
+        }
+
+        if (loop_cnt == max_window_cnt) {
+            spider_server_emit_event(server, MAX_WINDOW_EVENT, client_id[0], true);
+        }
+
+        if (loop_cnt == min_window_cnt) {
+            spider_server_emit_event(server, MIN_WINDOW_EVENT, client_id[0], true);
+        }
+
+        if (loop_cnt == full_window_cnt) {
+            spider_server_emit_event(server, FULL_WINDOW_EVENT, client_id[0], true);
+        }
+
+        if (loop_cnt == unfull_window_cnt) {
+            spider_server_emit_event(server, FULL_WINDOW_EVENT, client_id[0], false);
+        }
+
+        if (loop_cnt == resize_window_cnt) {
+            spider_server_emit_event(server, RESIZE_WINDOW_EVENT, client_id[0], 20, 30);
+        }
+
+        if (loop_cnt == move_window_cnt) {
+            spider_server_emit_event(server, MOVE_WINDOW_EVENT, client_id[0], 30, 20);
         }
 
         if (loop_cnt == del_client1_cnt) {
+            spider_server_emit_event(server, DEL_WINDOW_EVENT, client_id[0]);
             spider_server_emit_event(server, DEL_CLIENT_EVENT, client_id[0]);
         }
 
         if (loop_cnt == del_client2_cnt) {
+            spider_server_emit_event(server, DEL_WINDOW_EVENT, client_id[1]);
             spider_server_emit_event(server, DEL_CLIENT_EVENT, client_id[1]);
         }
 
         if (loop_cnt == del_client3_cnt) {
+            spider_server_emit_event(server, DEL_WINDOW_EVENT, client_id[2]);
             spider_server_emit_event(server, DEL_CLIENT_EVENT, client_id[2]);
         }
 

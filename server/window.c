@@ -41,18 +41,30 @@ void spider_window_maximize(struct spider_window *window, bool is_maximized) {
     spider_assert(window);
 
     window->is_maximized = is_maximized;
+    if (is_maximized) {
+        window->is_minimized = false;
+        window->is_full = false;
+    }
 }
 
 void spider_window_minimize(struct spider_window *window, bool is_minimized) {
     spider_assert(window);
 
     window->is_minimized = is_minimized;
+    if (is_minimized) {
+        window->is_maximized = false;
+        window->is_full = false;
+    }
 }
 
 void spider_window_full(struct spider_window *window, bool is_full) {
     spider_assert(window);
 
     window->is_full = is_full;
+    if (is_full) {
+        window->is_maximized = false;
+        window->is_minimized = false;
+    }
 }
 
 bool spider_window_is_maximized(struct spider_window *window) {

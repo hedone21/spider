@@ -81,9 +81,11 @@ static bool max_window_cb(struct spider_server *server, int client_id, bool maxi
     struct spider_window *window = spider_client_get_window(client);
     assert(window != NULL);
     spider_window_maximize(window, maximized);
-    assert(spider_window_is_maximized(window) == maximized);
-    assert(spider_window_is_minimized(window) != maximized);
-    assert(spider_window_is_fullscreen(window) != maximized);
+    if (maximized) {
+        assert(spider_window_is_maximized(window) == maximized);
+        assert(spider_window_is_minimized(window) != maximized);
+        assert(spider_window_is_fullscreen(window) != maximized);
+    }
 }
 
 static bool min_window_cb(struct spider_server *server, int client_id, bool minimized) {
@@ -97,9 +99,11 @@ static bool min_window_cb(struct spider_server *server, int client_id, bool mini
     struct spider_window *window = spider_client_get_window(client);
     assert(window != NULL);
     spider_window_minimize(window, minimized);
-    assert(spider_window_is_maximized(window) != minimized);
-    assert(spider_window_is_minimized(window) == minimized);
-    assert(spider_window_is_fullscreen(window) != minimized);
+    if (minimized) {
+        assert(spider_window_is_maximized(window) != minimized);
+        assert(spider_window_is_minimized(window) == minimized);
+        assert(spider_window_is_fullscreen(window) != minimized);
+    }
 }
 
 static bool full_window_cb(struct spider_server *server, int client_id, bool is_full) {
@@ -113,9 +117,11 @@ static bool full_window_cb(struct spider_server *server, int client_id, bool is_
     struct spider_window *window = spider_client_get_window(client);
     assert(window != NULL);
     spider_window_full(window, is_full);
-    assert(spider_window_is_maximized(window) != is_full);
-    assert(spider_window_is_minimized(window) != is_full);
-    assert(spider_window_is_fullscreen(window) == is_full);
+    if (is_full) {
+        assert(spider_window_is_maximized(window) != is_full);
+        assert(spider_window_is_minimized(window) != is_full);
+        assert(spider_window_is_fullscreen(window) == is_full);
+    }
 }
 
 static bool move_window_cb(struct spider_server *server, int client_id, unsigned int x, unsigned int y) {
