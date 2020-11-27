@@ -20,21 +20,64 @@
  * SOFTWARE.
  */
 
+#include <unistd.h>
 #include "server.h"
+#include "server/event.h"
 #include "server/server.h"
 #include "common/log.h"
 
 static bool spider_backend_mock_init(struct spider_server *server, void *data) {
-    spider_err("mock init\n");
+    spider_log("mock init\n");
 
     return true;
 }
 
 static void spider_backend_mock_run(struct spider_server *server, void *data) {
+    spider_log("mock run\n");
+    const unsigned int max_loop_cnt = 200;
+    const unsigned int new_client1_cnt = 10;
+    const unsigned int new_client2_cnt = 20;
+    const unsigned int new_client3_cnt = 30;
+    const unsigned int del_client1_cnt = 170;
+    const unsigned int del_client2_cnt = 190;
+    const unsigned int del_client3_cnt = 180;
 
+    const unsigned int max_clients = 10;
+    int client_id[max_clients]; 
+
+    unsigned int loop_cnt = 0;
+    /* 16ms * 200 = 3,200ms */
+    for (loop_cnt = 0; loop_cnt < max_loop_cnt; loop_cnt++) {
+        if (loop_cnt == new_client1_cnt) {
+            spider_server_emit_event(server, NEW_CLIENT_EVENT, &client_id[0]);
+        }
+
+        if (loop_cnt == new_client2_cnt) {
+            spider_server_emit_event(server, NEW_CLIENT_EVENT, &client_id[1]);
+        }
+
+        if (loop_cnt == new_client3_cnt) {
+            spider_server_emit_event(server, NEW_CLIENT_EVENT, &client_id[2]);
+        }
+
+        if (loop_cnt == del_client1_cnt) {
+            spider_server_emit_event(server, DEL_CLIENT_EVENT, &client_id[0]);
+        }
+
+        if (loop_cnt == del_client2_cnt) {
+            spider_server_emit_event(server, DEL_CLIENT_EVENT, &client_id[1]);
+        }
+
+        if (loop_cnt == del_client3_cnt) {
+            spider_server_emit_event(server, DEL_CLIENT_EVENT, &client_id[2]);
+        }
+
+        usleep(16 * 1000);
+    }
 }
 
 static void spider_backend_mock_free(struct spider_server *server, void *data) {
+    spider_log("mock free\n");
 
 }
 

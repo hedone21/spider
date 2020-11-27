@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <stdbool.h>
+#include "common/log.h"
 #include "server/server.h"
 #include "server/backend/backend.h"
 #include "server/backend/server.h"
@@ -35,6 +36,8 @@ static void test_server_operation_with_backend() {
 }
 
 static bool new_client_cb(struct spider_server *server, int *client_id) {
+    spider_log("new client\n");
+
     static int id = 0;
     assert(server != NULL);
     struct spider_client *client = spider_client_create(id++);
@@ -42,9 +45,12 @@ static bool new_client_cb(struct spider_server *server, int *client_id) {
     struct spider_client_mngr *mngr = spider_server_get_client_mngr(server);
     assert(mngr != NULL);
     spider_client_mngr_append_client(mngr, client);
+    *client_id = id;
 }
 
 static bool del_client_cb(struct spider_server *server, int client_id) {
+    spider_log("del client id=%d\n", client_id);
+
     assert(server != NULL);
     struct spider_client_mngr *mngr = spider_server_get_client_mngr(server);
     assert(mngr != NULL);
@@ -52,6 +58,8 @@ static bool del_client_cb(struct spider_server *server, int client_id) {
 }
 
 static bool new_window_cb(struct spider_server *server, int client_id) {
+    spider_log("new window id=%d\n", client_id);
+
     assert(server != NULL);
     struct spider_client_mngr *mngr = spider_server_get_client_mngr(server);
     assert(mngr != NULL);
@@ -62,6 +70,8 @@ static bool new_window_cb(struct spider_server *server, int client_id) {
 }
 
 static bool max_window_cb(struct spider_server *server, int client_id, bool maximized) {
+    spider_log("max window id=%d maximized=%b\n", client_id, maximized);
+
     assert(server != NULL);
     struct spider_client_mngr *mngr = spider_server_get_client_mngr(server);
     assert(mngr != NULL);
@@ -76,6 +86,8 @@ static bool max_window_cb(struct spider_server *server, int client_id, bool maxi
 }
 
 static bool min_window_cb(struct spider_server *server, int client_id, bool minimized) {
+    spider_log("min window id=%d minimized=%d\n", client_id, minimized);
+
     assert(server != NULL);
     struct spider_client_mngr *mngr = spider_server_get_client_mngr(server);
     assert(mngr != NULL);
@@ -90,6 +102,8 @@ static bool min_window_cb(struct spider_server *server, int client_id, bool mini
 }
 
 static bool full_window_cb(struct spider_server *server, int client_id, bool is_full) {
+    spider_log("full window id=%d is_full=%b\n", client_id, is_full);
+
     assert(server != NULL);
     struct spider_client_mngr *mngr = spider_server_get_client_mngr(server);
     assert(mngr != NULL);
@@ -104,6 +118,8 @@ static bool full_window_cb(struct spider_server *server, int client_id, bool is_
 }
 
 static bool move_window_cb(struct spider_server *server, int client_id, unsigned int x, unsigned int y) {
+    spider_log("move window id=%d x=%d y=%d\n", client_id, x, y);
+
     assert(server != NULL);
     struct spider_client_mngr *mngr = spider_server_get_client_mngr(server);
     assert(mngr != NULL);
@@ -117,6 +133,8 @@ static bool move_window_cb(struct spider_server *server, int client_id, unsigned
 }
 
 static bool resize_window_cb(struct spider_server *server, int client_id, unsigned int w, unsigned int h) {
+    spider_log("resize window id=%d w=%d h=%d\n", client_id, w, h);
+
     assert(server != NULL);
     struct spider_client_mngr *mngr = spider_server_get_client_mngr(server);
     assert(mngr != NULL);
@@ -130,6 +148,8 @@ static bool resize_window_cb(struct spider_server *server, int client_id, unsign
 }
 
 static bool del_window_cb(struct spider_server *server, int client_id) {
+    spider_log("del window id=%d\n", client_id);
+
     assert(server != NULL);
     struct spider_client_mngr *mngr = spider_server_get_client_mngr(server);
     assert(mngr != NULL);

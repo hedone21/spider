@@ -25,7 +25,7 @@
 
 #include <stdbool.h>
 #include "server/server.h"
-#include "backend.h"
+#include "server/backend/backend.h"
 
 struct spider_backend_server {
     bool (*init)(struct spider_server *server, void *data);

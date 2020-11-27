@@ -23,6 +23,7 @@ mock_so = shared_library(
         wlr_layer_shell_unstable_v1_protocol_c,
         wlr_layer_shell_unstable_v1_protocol_h,
         dependencies: libmock_dep,
+        link_with: [common_a, server_a],
         include_directories: include_directories('../../..'),
         name_prefix: '',
         )

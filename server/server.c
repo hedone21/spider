@@ -33,6 +33,9 @@ struct spider_server* spider_server_create() {
     server = calloc(1, sizeof(*server));
     spider_assert(server != NULL);
 
+    server->mngr = spider_client_mngr_new();
+    spider_assert(server->mngr != NULL);
+
     return server;
 }
 

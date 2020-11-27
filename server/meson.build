@@ -7,6 +7,8 @@ libserver_src = [
     'message.c',
     'server.c',
     'window.c',
+    'backend/backend.c',
+    'backend/server.c',
 ]
 
 server_src = [
@@ -22,12 +24,10 @@ server_dep = [
     wlr_dep,
 ]
 
-subdir('backend')
-
 server_a = static_library(
         'spider_server',
         libserver_src,
-        link_with: [common_a, backend_a],
+        link_with: [common_a],
         dependencies: server_dep,
         include_directories: include_directories('..'),
         name_prefix: '',
@@ -50,4 +50,5 @@ server_exe = executable(
         name_prefix: '',
         )
 
+subdir('backend')
 subdir('tests')
