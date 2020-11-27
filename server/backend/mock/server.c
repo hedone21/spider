@@ -22,8 +22,11 @@
 
 #include "server.h"
 #include "server/server.h"
+#include "common/log.h"
 
 static bool spider_backend_mock_init(struct spider_server *server, void *data) {
+    spider_err("mock init\n");
+
     return true;
 }
 

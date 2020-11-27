@@ -28,7 +28,7 @@
 #include "common/log.h"
 
 #define spider_assert(expr) do {             \
-    if (!expr)                                                          \
+    if (!(expr))                                                          \
         spider_err("[Line: %d] Assert failed (%s)\n", __LINE__, #expr); \
     assert(expr);                                                       \
 }while(0);
