@@ -36,16 +36,17 @@ static void test_server_operation_with_backend() {
 }
 
 static bool new_client_cb(struct spider_server *server, int *client_id) {
-    spider_log("new client\n");
-
     static int id = 0;
+    spider_log("new client id=%d\n", id);
+
     assert(server != NULL);
-    struct spider_client *client = spider_client_create(id++);
+    struct spider_client *client = spider_client_create(id);
     assert(client != NULL);
     struct spider_client_mngr *mngr = spider_server_get_client_mngr(server);
     assert(mngr != NULL);
     spider_client_mngr_append_client(mngr, client);
     *client_id = id;
+    id++;
 }
 
 static bool del_client_cb(struct spider_server *server, int client_id) {

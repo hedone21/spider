@@ -61,15 +61,15 @@ static void spider_backend_mock_run(struct spider_server *server, void *data) {
         }
 
         if (loop_cnt == del_client1_cnt) {
-            spider_server_emit_event(server, DEL_CLIENT_EVENT, &client_id[0]);
+            spider_server_emit_event(server, DEL_CLIENT_EVENT, client_id[0]);
         }
 
         if (loop_cnt == del_client2_cnt) {
-            spider_server_emit_event(server, DEL_CLIENT_EVENT, &client_id[1]);
+            spider_server_emit_event(server, DEL_CLIENT_EVENT, client_id[1]);
         }
 
         if (loop_cnt == del_client3_cnt) {
-            spider_server_emit_event(server, DEL_CLIENT_EVENT, &client_id[2]);
+            spider_server_emit_event(server, DEL_CLIENT_EVENT, client_id[2]);
         }
 
         usleep(16 * 1000);
