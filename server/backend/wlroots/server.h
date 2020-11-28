@@ -20,4 +20,31 @@
  * SOFTWARE.
  */
 
+#ifndef SPIDER_BACKEND_WLROOTS_SERVER_H
+#define SPIDER_BACKEND_WLROOTS_SERVER_H
+
 #include "wlroots.h"
+#include "server/backend/server.h"
+
+struct spider_wlroots_server {
+	struct wl_display *wl_display;
+	struct wl_event_loop *wl_event_loop;
+	struct wlr_compositor *compositor;
+	struct wlr_backend *backend;
+	struct wlr_backend *noop_backend;
+	struct wlr_renderer *renderer;
+
+	struct wlr_xdg_shell *xdg_shell;
+	struct wl_listener new_xdg_surface;
+
+	struct wlr_cursor *cursor;
+	struct wlr_xcursor_manager *cursor_mgr;
+
+	struct wlr_output_layout *output_layout;
+	struct wl_listener new_output;
+};
+
+/* This is external use */
+struct spider_backend_server spider_backend_server;
+
+#endif
