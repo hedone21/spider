@@ -36,6 +36,9 @@ struct spider_server* spider_server_create() {
     server->mngr = spider_client_mngr_new();
     spider_assert(server->mngr != NULL);
 
+    server->cursor = spider_cursor_new();
+    spider_assert(server->cursor != NULL);
+
     return server;
 }
 
@@ -94,6 +97,13 @@ struct spider_client_mngr* spider_server_get_client_mngr(struct spider_server *s
     return server->mngr;
 }
 
+struct spider_cursor* spider_server_get_cursor(struct spider_server *server) {
+    spider_assert(server != NULL);
+    spider_assert(server->cursor != NULL);
+
+    return server->cursor;
+}
+
 bool spider_server_register_event(struct spider_server *server, enum spider_event_type ev_type, void *cb) {
     spider_assert(server != NULL);
     spider_assert(cb != NULL);
@@ -144,6 +154,15 @@ void spider_server_emit_event(struct spider_server *server, enum spider_event_ty
             num_of_args = 3;
             break;
         case DEL_WINDOW_EVENT:
+            num_of_args = 1;
+            break;
+        case MOVE_CURSOR_EVENT:
+            num_of_args = 2;
+            break;
+        case ABSMOVE_CURSOR_EVENT:
+            num_of_args = 2;
+            break;
+        case CLICK_CURSOR_EVENT:
             num_of_args = 1;
             break;
         case RENDER_EVENT:
@@ -199,6 +218,15 @@ void spider_server_emit_event(struct spider_server *server, enum spider_event_ty
                 break;
             case DEL_WINDOW_EVENT:
                 ((spider_del_window_cb)func)(server, args[0]);
+                break;
+            case MOVE_CURSOR_EVENT:
+                ((spider_move_cursor_cb)func)(server, args[0], args[1]);
+                break;
+            case ABSMOVE_CURSOR_EVENT:
+                ((spider_absmove_cursor_cb)func)(server, args[0], args[1]);
+                break;
+            case CLICK_CURSOR_EVENT:
+                ((spider_click_cursor_cb)func)(server, args[0]);
                 break;
             case RENDER_EVENT:
                 ((spider_render_cb)func)(server);

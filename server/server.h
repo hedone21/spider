@@ -27,11 +27,13 @@
 #include <stdbool.h>
 #include <glib.h>
 #include "client_mngr.h"
+#include "cursor.h"
 #include "event.h"
 #include "backend/backend.h"
 
 struct spider_server {
     struct spider_client_mngr *mngr; 
+    struct spider_cursor *cursor;
     struct spider_backend *backend;
     GList* events[NUM_OF_EVENT];
 };
@@ -41,6 +43,7 @@ struct spider_server* spider_server_create_with_backend(char *backend);
 void spider_server_run(struct spider_server *server);
 void spider_server_free(struct spider_server **server);
 struct spider_client_mngr* spider_server_get_client_mngr(struct spider_server *server);
+struct spider_cursor* spider_server_get_cursor(struct spider_server *server);
 bool spider_server_register_event(struct spider_server *server, enum spider_event_type ev_type, void *cb);
 void spider_server_emit_event(struct spider_server *server, enum spider_event_type ev_type, ...);
 
@@ -124,6 +127,32 @@ typedef bool (*spider_resize_window_cb)(struct spider_server *server, int client
  * @return boolean Retern true on success, and return false on failure
  */
 typedef bool (*spider_del_window_cb)(struct spider_server *server, int client_id);
+
+/**
+ * @brief Called when a cursor moved
+ * @param server spider server object
+ * @param x x relative value
+ * @param y y relative value
+ * @return boolean Retern true on success, and return false on failure
+ */
+typedef bool (*spider_move_cursor_cb)(struct spider_server *server, unsigned int x, unsigned int y);
+
+/**
+ * @brief Called when a cursor moved
+ * @param server spider server object
+ * @param x x absolute value
+ * @param y y absolute value
+ * @return boolean Retern true on success, and return false on failure
+ */
+typedef bool (*spider_absmove_cursor_cb)(struct spider_server *server, unsigned int x, unsigned int y);
+
+/**
+ * @brief Called when a client is clicked
+ * @param server spider server object
+ * @param is_clicked true on pressed, false on released
+ * @return boolean Retern true on success, and return false on failure
+ */
+typedef bool (*spider_click_cursor_cb)(struct spider_server *server, bool is_clicked);
 
 /**
  * @brief Called when frame is drawed

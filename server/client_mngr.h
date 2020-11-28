@@ -48,6 +48,7 @@ struct spider_client* spider_client_mngr_get_panel(struct spider_client_mngr *mn
 struct spider_iter* spider_client_mngr_get_client_iter(struct spider_client_mngr *mngr);
 unsigned int spider_client_mngr_get_client_cnt(struct spider_client_mngr *mngr);
 struct spider_client* spider_client_mngr_get_shell(struct spider_client_mngr *mngr);
+void spider_client_mngr_focus(struct spider_client_mngr *mngr, unsigned int x, unsigned int y);
 void spider_client_mngr_remove_client(struct spider_client_mngr *mngr, int idx);
 void spider_client_mngr_remove_client_with_id(struct spider_client_mngr *mngr, int id);
 void spider_client_mngr_remove_client_with_obj(struct spider_client_mngr *mngr, struct spider_client *client);

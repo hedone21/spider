@@ -1,6 +1,7 @@
 libserver_src = [
     'client.c',
     'client_mngr.c',
+    'cursor.c',
     'event.c',
     'iter.c',
     'keybindings.c',

@@ -44,6 +44,8 @@ static void spider_backend_mock_run(struct spider_server *server, void *data) {
     const unsigned int unfull_window_cnt = 80;
     const unsigned int resize_window_cnt = 90;
     const unsigned int move_window_cnt = 90;
+    const unsigned int absmove_cursor_cnt = 100;
+    const unsigned int click_cursor_cnt = 110;
     const unsigned int del_client1_cnt = 170;
     const unsigned int del_client2_cnt = 190;
     const unsigned int del_client3_cnt = 180;
@@ -91,6 +93,14 @@ static void spider_backend_mock_run(struct spider_server *server, void *data) {
 
         if (loop_cnt == move_window_cnt) {
             spider_server_emit_event(server, MOVE_WINDOW_EVENT, client_id[0], 30, 20);
+        }
+
+        if (loop_cnt == absmove_cursor_cnt) {
+            spider_server_emit_event(server, ABSMOVE_CURSOR_EVENT, client_id[0], 40, 40);
+        }
+
+        if (loop_cnt == click_cursor_cnt) {
+            spider_server_emit_event(server, MOVE_WINDOW_EVENT, client_id[0], true);
         }
 
         if (loop_cnt == del_client1_cnt) {

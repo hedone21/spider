@@ -91,6 +91,22 @@ struct spider_window* spider_client_get_window(struct spider_client *client) {
     return &(client->window);
 } 
 
+bool spider_client_check_focused(struct spider_client *client, unsigned int x, unsigned int y) {
+    spider_assert(client != NULL);
+
+    unsigned int client_x, client_y, client_w, client_h;
+    client_x = client->window.x;
+    client_y = client->window.y;
+    client_h = client->window.h;
+    client_w = client->window.w;
+
+    if (x > client_x && x < client_x + client_w && y > client_y && y < client_y + client_h) {
+        return true;
+    }
+
+    return false;
+}
+
 void spider_client_draw(struct spider_client *client) {
     spider_assert(client != NULL);
 

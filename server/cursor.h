@@ -20,38 +20,24 @@
  * SOFTWARE.
  */
 
-#ifndef SPIDER_CLIENT_H
-#define SPIDER_CLIENT_H
+#ifndef SPIDER_CURSOR_H
+#define SPIDER_CURSOR_H
 
-#include <unistd.h>
-#include "window.h"
-#include "server/backend/backend.h"
+#include <stdbool.h>
 
-enum spider_client_layer {
-    SHELL_LAYER = 0, /* == BACKGROUND */
-    PANEL1_LAYER,
-    PANEL2_LAYER,
-    CLIENT_LAYER,
-    OVERLAY_LAYER,
+struct spider_cursor {
+    unsigned int x, y;
+    bool is_clicked;
 };
 
-struct spider_client {
-    struct spider_window window;
-    enum spider_client_layer layer;
-    int id;
+struct spider_cursor* spider_cursor_new();
+void spider_cursor_move(struct spider_cursor *cursor, unsigned int x, unsigned int y);
+void spider_cursor_absmove(struct spider_cursor *cursor, unsigned int x, unsigned int y);
+void spider_cursor_click(struct spider_cursor *cursor, bool is_clicked);
+void spider_cursor_get_pos(struct spider_cursor *cursor, unsigned int *x, unsigned int *y);
+bool spider_cursor_is_clicked(struct spider_cursor *cursor);
+void spider_cursor_free(struct spider_cursor **cursor);
 
-    struct spider_backend_client *backend;
-    void *data;
-};
+// void spider_cursor_axis(struct spider_cursor *cursor, struct spider_server *server);
 
-struct spider_client* spider_client_create(int id);
-struct spider_client* spider_client_create_shell(int id);
-struct spider_client* spider_client_create_panel(int id, int panel_id);
-void spider_client_add_backend(struct spider_client *client, struct spider_backend *backend);
-enum spider_client_layer spider_client_get_layer(struct spider_client *client);
-struct spider_window* spider_client_get_window(struct spider_client *client);
-bool spider_client_check_focused(struct spider_client *client, unsigned int x, unsigned int y);
-void spider_client_draw(struct spider_client *client);
-void spider_client_free(struct spider_client **client);
-
-#endif /* SPIDER_CLIENT_H */
+#endif /* SPIDER_CURSOR_H */

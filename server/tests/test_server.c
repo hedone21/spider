@@ -61,7 +61,8 @@ static bool del_client_cb(struct spider_server *server, int client_id) {
     spider_client_mngr_remove_client_with_id(mngr, client_id);
 }
 
-static bool new_window_cb(struct spider_server *server, int client_id) {
+static bool new_window_cb(struct spider_server *server, int client_id, 
+                          unsigned int x, unsigned int y, unsigned int w, unsigned int h) {
     spider_log("new window id=%d\n", client_id);
 
     assert(server != NULL);
@@ -71,6 +72,10 @@ static bool new_window_cb(struct spider_server *server, int client_id) {
     assert(client != NULL);
     struct spider_window *window = spider_client_get_window(client);
     assert(window != NULL);
+    window->x = x;
+    window->y = y;
+    window->w = w;
+    window->h = h;
 }
 
 static bool max_window_cb(struct spider_server *server, int client_id, bool maximized) {
@@ -169,6 +174,31 @@ static bool del_window_cb(struct spider_server *server, int client_id) {
     assert(window != NULL);
 }
 
+static bool absmove_cursor_cb(struct spider_server *server, unsigned int x, unsigned int y) {
+    spider_log("absmove cursor\n");
+    
+    assert(server != NULL);
+    struct spider_cursor *cursor = spider_server_get_cursor(server);
+    assert(cursor != NULL);
+
+    spider_cursor_absmove(cursor, x, y);
+}
+
+static bool click_cursor_cb(struct spider_server *server, bool is_clicked) {
+    spider_log("click cursor\n");
+
+    assert(server != NULL);
+    struct spider_cursor *cursor = spider_server_get_cursor(server);
+    assert(cursor != NULL);
+
+    spider_cursor_click(cursor, is_clicked);
+    if (is_clicked) {
+        int x, y;
+        spider_cursor_get_pos(cursor, &x, &y);
+        spider_client_mngr_focus(cursor, x, y);
+    }
+}
+
 static bool render_cb(struct spider_server *server) {
     spider_log("render\n");
 
@@ -202,6 +232,8 @@ static void test_server_operation_with_callbacks() {
     spider_server_register_event(server, MOVE_WINDOW_EVENT, move_window_cb);
     spider_server_register_event(server, RESIZE_WINDOW_EVENT, resize_window_cb);
     spider_server_register_event(server, DEL_WINDOW_EVENT, del_window_cb);
+    spider_server_register_event(server, ABSMOVE_CURSOR_EVENT, absmove_cursor_cb);
+    spider_server_register_event(server, CLICK_CURSOR_EVENT, click_cursor_cb);
     spider_server_register_event(server, RENDER_EVENT, render_cb);
 
     spider_server_add_backend(server, backend);

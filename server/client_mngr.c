@@ -221,10 +221,12 @@ struct spider_client* spider_client_mngr_get_client_with_obj(struct spider_clien
     for (; iter != NULL; iter = iter->next(iter)) {
         client2 = spider_iter_get_data(iter);
         if (client2 == NULL) {
+            free(iter);
             break;
         }
 
         if (client2 == client) {
+            free(iter);
             break;
         }
 
@@ -252,6 +254,28 @@ struct spider_iter* spider_client_mngr_get_client_iter(struct spider_client_mngr
 
 unsigned int spider_client_mngr_get_client_cnt(struct spider_client_mngr *mngr) {
     return mngr->client_cnt;
+}
+
+void spider_client_mngr_focus(struct spider_client_mngr *mngr, unsigned int x, unsigned int y) {
+    spider_assert(mngr);
+    struct spider_iter *iter = NULL;
+    struct spider_client *client = NULL;
+
+    iter = spider_client_mngr_get_client_iter(mngr);
+    for (; iter != NULL; iter = iter->next(iter)) {
+        client = spider_iter_get_data(iter);
+        if (client == NULL) {
+            free(iter);
+            break;
+        }
+
+        if (spider_client_check_focused(client, x, y)) {
+            mngr->clients = g_list_remove(mngr->clients, client);
+            mngr->clients = g_list_prepend(mngr->clients, client);
+        }
+
+        client = NULL;
+    }
 }
 
 static void remove_client(struct spider_client_mngr *mngr, struct spider_client *client) {
