@@ -22,6 +22,7 @@
 
 #include <unistd.h>
 #include "server.h"
+#include "output.h"
 #include "server/event.h"
 #include "server/server.h"
 #include "server/spider_assert.h"
@@ -48,7 +49,7 @@ static bool spider_backend_wlroots_init(struct spider_server *server, void *data
 	wlr_data_device_manager_create(wlserver->wl_display);
 
 	wlserver->output_layout = wlr_output_layout_create();
-	// wlserver->new_output.notify = handle_new_output;
+	wlserver->new_output.notify = spider_wlroots_output_handle_new;
 	wl_signal_add(&wlserver->backend->events.new_output, &wlserver->new_output);
 
 	wlserver->xdg_shell = wlr_xdg_shell_create(wlserver->wl_display);

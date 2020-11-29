@@ -1,6 +1,7 @@
 libwlroots_src = [
     'wlroots.c',
     'client.c',
+    'output.c',
     'server.c',
 ]
 
