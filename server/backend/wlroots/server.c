@@ -27,76 +27,74 @@
 #include "server/spider_assert.h"
 #include "common/log.h"
 
-struct spider_wlroots_server *server;
+struct spider_wlroots_server *wlserver;
 
 static bool spider_backend_wlroots_init(struct spider_server *server, void *data) {
     spider_log("wlroots init\n");
 
-    server = calloc(1, sizeof(*server));
-    spider_assert(server != NULL);
+    wlserver = calloc(1, sizeof(*wlserver));
+    spider_assert(wlserver != NULL);
 
-    server->wl_display = wl_display_create();
-    spider_assert(server->wl_display != NULL):
-    server->backend = wlr_backend_autocreate(server->wl_display, NULL);
-    spider_assert(server->backend != NULL):
-	server->noop_backend = wlr_noop_backend_create(server->wl_display);
+    wlserver->wl_display = wl_display_create();
+    spider_assert(wlserver->wl_display != NULL);
+    wlserver->backend = wlr_backend_autocreate(wlserver->wl_display, NULL);
+    spider_assert(wlserver->backend != NULL);
+	wlserver->noop_backend = wlr_noop_backend_create(wlserver->wl_display);
 
-	server->renderer = wlr_backend_get_renderer(server->backend);
-	wlr_renderer_init_wl_display(server->renderer, server->wl_display);
+	wlserver->renderer = wlr_backend_get_renderer(wlserver->backend);
+	wlr_renderer_init_wl_display(wlserver->renderer, wlserver->wl_display);
 
-	server->compositor = wlr_compositor_create(server->wl_display, server->renderer);
-	wlr_data_device_manager_create(server->wl_display);
+	wlserver->compositor = wlr_compositor_create(wlserver->wl_display, wlserver->renderer);
+	wlr_data_device_manager_create(wlserver->wl_display);
 
-	server->output_layout = wlr_output_layout_create();
-	server->new_output.notify = handle_new_output;
-	wl_signal_add(&server->backend->events.new_output, &server->new_output);
+	wlserver->output_layout = wlr_output_layout_create();
+	// wlserver->new_output.notify = handle_new_output;
+	wl_signal_add(&wlserver->backend->events.new_output, &wlserver->new_output);
 
-	server->xdg_shell = wlr_xdg_shell_create(server->wl_display);
-	server->new_xdg_surface.notify = handle_new_xdg_surface;
-	wl_signal_add(&server->xdg_shell->events.new_surface,
-			&server->new_xdg_surface);
+	wlserver->xdg_shell = wlr_xdg_shell_create(wlserver->wl_display);
+	// wlserver->new_xdg_surface.notify = handle_new_xdg_surface;
+	wlserver->new_xdg_surface.notify = NULL;
+	wl_signal_add(&wlserver->xdg_shell->events.new_surface,
+			&wlserver->new_xdg_surface);
 
-	server->layer_shell = wlr_layer_shell_v1_create(server->wl_display);
-	server->layer_shell_surface.notify = handle_layer_shell_surface;
-	wl_signal_add(&server->layer_shell->events.new_surface,
-			&server->layer_shell_surface);
-
-	server->cursor = wlr_cursor_create();
-	wlr_cursor_attach_output_layout(server->cursor, server->output_layout);
-	server->cursor_mgr = wlr_xcursor_manager_create(NULL, 24);
-	wlr_xcursor_manager_load(server->cursor_mgr, 1);
+	wlserver->cursor = wlr_cursor_create();
+	wlr_cursor_attach_output_layout(wlserver->cursor, wlserver->output_layout);
+	wlserver->cursor_mgr = wlr_xcursor_manager_create(NULL, 24);
+	wlr_xcursor_manager_load(wlserver->cursor_mgr, 1);
 
     // create_cursor()
 
-	server->new_input.notify = handle_new_input;
-	wl_signal_add(&server->backend->events.new_input, &server->new_input);
+	// wlserver->new_input.notify = handle_new_input;
+	wlserver->new_input.notify = NULL;
+	wl_signal_add(&wlserver->backend->events.new_input, &wlserver->new_input);
 
-	server->seat = wlr_seat_create(server->wl_display, "seat0");
-	server->request_cursor.notify = handle_seat_request_cursor;
-	wl_signal_add(&server->seat->events.request_set_cursor,
-			&server->request_cursor);
+	wlserver->seat = wlr_seat_create(wlserver->wl_display, "seat0");
+	// wlserver->request_cursor.notify = handle_seat_request_cursor;
+	wlserver->request_cursor.notify = NULL;
+	wl_signal_add(&wlserver->seat->events.request_set_cursor,
+			&wlserver->request_cursor);
 
 	/* TODO custom interface */
-	const char *socket = wl_display_add_socket_auto(server->wl_display);
+	const char *socket = wl_display_add_socket_auto(wlserver->wl_display);
 	if (!socket) {
         goto out;
 	}
 
-	if (!wlr_backend_start(server->backend)) {
+	if (!wlr_backend_start(wlserver->backend)) {
         goto out;
 	}
 
 	setenv("WAYLAND_DISPLAY", socket, true);
 
-	server->wl_event_loop = wl_display_get_event_loop(server->wl_display);
+	wlserver->wl_event_loop = wl_display_get_event_loop(wlserver->wl_display);
 
     // TODO launch client
 	spider_log("Running Wayland compositor on WAYLAND_DISPLAY=%s\n", socket);
-	wl_display_run(compositor->wl_display);
+	wl_display_run(wlserver->wl_display);
 
 out:
-	wl_display_destroy_clients(compositor->wl_display);
-	wl_display_destroy(compositor->wl_display);
+	wl_display_destroy_clients(wlserver->wl_display);
+	wl_display_destroy(wlserver->wl_display);
 
 	return 0;
 }

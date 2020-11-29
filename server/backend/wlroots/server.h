@@ -40,8 +40,18 @@ struct spider_wlroots_server {
 	struct wlr_cursor *cursor;
 	struct wlr_xcursor_manager *cursor_mgr;
 
+	struct wlr_seat *seat;
+	struct wl_listener new_input;
+	struct wl_listener request_cursor;
+
 	struct wlr_output_layout *output_layout;
 	struct wl_listener new_output;
+
+	/* Unstable Interface */
+	struct wlr_layer_shell_v1 *layer_shell;
+	struct wl_listener layer_shell_surface;
+	struct wlr_xdg_shell_v6 *xdg_shell_v6;
+	struct wl_listener xdg_shell_v6_surface;
 };
 
 /* This is external use */

@@ -1,2 +1,2 @@
 subdir('mock')
-# subdir('wlroots')
+subdir('wlroots')

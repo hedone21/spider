@@ -1,5 +1,7 @@
 libwlroots_src = [
     'wlroots.c',
+    'client.c',
+    'server.c',
 ]
 
 libwlroots_dep = [
@@ -22,7 +24,7 @@ wlroots_so = shared_library(
         wlr_layer_shell_unstable_v1_protocol_c,
         wlr_layer_shell_unstable_v1_protocol_h,
         dependencies: libwlroots_dep,
-        include_directories: include_directories('../..'),
+        include_directories: include_directories('../../..'),
         name_prefix: '',
         )
 
