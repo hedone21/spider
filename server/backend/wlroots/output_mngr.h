@@ -20,6 +20,18 @@
  * SOFTWARE.
  */
 
-#include "output.h"
-#include "server.h"
+#ifndef SPIDER_BACKEND_WLROOTS_OUTPUT_MNGR_H
+#define SPIDER_BACKEND_WLROOTS_OUTPUT_MNGR_H
 
+#include <glib.h>
+#include "wlroots.h"
+#include "output.h"
+
+struct spider_wlroots_output_mngr {
+    GList *output;
+    struct wl_listener *listener;
+};
+
+struct spuder_wlroots_output_mngr* spider_wlroots_output_mngr_new();
+
+#endif
