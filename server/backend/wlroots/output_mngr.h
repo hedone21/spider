@@ -20,5 +20,25 @@
  * SOFTWARE.
  */
 
+#ifndef SPIDER_BACKEND_WLROOTS_OUTPUT_MNGR_H
+#define SPIDER_BACKEND_WLROOTS_OUTPUT_MNGR_H
+
+#include <glib.h>
+#include <wlr/backend.h>
+#include "wlroots.h"
+#include "common/util.h"
 #include "output.h"
 
+struct spider_wlroots_output_mngr {
+    GList *outputs;
+
+	struct wlr_output_layout *output_layout;
+	struct wl_listener new_output;
+};
+
+struct spider_wlroots_output_mngr* spider_wlroots_output_mngr_new();
+struct wl_listener* spider_wlroots_output_mngr_get_output_listener(struct spider_wlroots_output_mngr *mngr);
+struct wlr_output_layout* spider_wlroots_output_mngr_get_output_layout(struct spider_wlroots_output_mngr *mngr);
+void spider_wlroots_output_mngr_handle_new(struct wl_listener *listener, void *data);
+
+#endif /* SPIDER_BACKEND_WLROOTS_OUTPUT_H */

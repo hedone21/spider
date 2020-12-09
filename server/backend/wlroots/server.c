@@ -22,7 +22,7 @@
 
 #include <unistd.h>
 #include "server.h"
-#include "output.h"
+#include "output_mngr.h"
 #include "server/event.h"
 #include "server/server.h"
 #include "server/spider_assert.h"
@@ -48,9 +48,9 @@ static bool spider_backend_wlroots_init(struct spider_server *server, void *data
 	wlserver->compositor = wlr_compositor_create(wlserver->wl_display, wlserver->renderer);
 	wlr_data_device_manager_create(wlserver->wl_display);
 
-	wlserver->output_layout = wlr_output_layout_create();
-	wlserver->new_output.notify = spider_wlroots_output_handle_new;
-	wl_signal_add(&wlserver->backend->events.new_output, &wlserver->new_output);
+    wlserver->output_mngr = spider_wlroots_output_mngr_new();
+	wl_signal_add(&wlserver->backend->events.new_output, 
+                  spider_wlroots_output_mngr_get_output_listener(wlserver->output_mngr));
 
 	wlserver->xdg_shell = wlr_xdg_shell_create(wlserver->wl_display);
 	// wlserver->new_xdg_surface.notify = handle_new_xdg_surface;
@@ -59,7 +59,7 @@ static bool spider_backend_wlroots_init(struct spider_server *server, void *data
 			&wlserver->new_xdg_surface);
 
 	wlserver->cursor = wlr_cursor_create();
-	wlr_cursor_attach_output_layout(wlserver->cursor, wlserver->output_layout);
+	// wlr_cursor_attach_output_layout(wlserver->cursor, wlserver->output_layout);
 	wlserver->cursor_mgr = wlr_xcursor_manager_create(NULL, 24);
 	wlr_xcursor_manager_load(wlserver->cursor_mgr, 1);
 

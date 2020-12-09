@@ -38,6 +38,4 @@ struct spider_wlroots_output {
 	struct wl_listener present;
 };
 
-void spider_wlroots_output_handle_new(struct wl_listener *listener, void *data);
-
 #endif /* SPIDER_BACKEND_WLROOTS_OUTPUT_H */
