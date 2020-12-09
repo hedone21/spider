@@ -23,6 +23,7 @@
 #ifndef SPIDER_BACKEND_WLROOTS_OUTPUT_H
 #define SPIDER_BACKEND_WLROOTS_OUTPUT_H
 
+#include <glib.h>
 #include "wlroots.h"
 #include "common/util.h"
 
