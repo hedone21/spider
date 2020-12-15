@@ -33,7 +33,6 @@ struct spider_wlroots_server {
 	struct wlr_compositor *compositor;
 	struct wlr_backend *backend;
 	struct wlr_backend *noop_backend;
-	struct wlr_renderer *renderer;
 
 	struct wlr_xdg_shell *xdg_shell;
 	struct wl_listener new_xdg_surface;

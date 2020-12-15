@@ -32,6 +32,7 @@ struct spider_wlroots_server *wlserver;
 
 static bool spider_backend_wlroots_init(struct spider_server *server, void *data) {
     spider_log("wlroots init\n");
+    wlr_log_init(WLR_DEBUG, NULL);
 
     wlserver = calloc(1, sizeof(*wlserver));
     spider_assert(wlserver != NULL);
@@ -42,13 +43,15 @@ static bool spider_backend_wlroots_init(struct spider_server *server, void *data
     spider_assert(wlserver->backend != NULL);
 	wlserver->noop_backend = wlr_noop_backend_create(wlserver->wl_display);
 
-	wlserver->renderer = wlr_backend_get_renderer(wlserver->backend);
-	wlr_renderer_init_wl_display(wlserver->renderer, wlserver->wl_display);
+    struct wlr_renderer *renderer = wlr_backend_get_renderer(wlserver->backend);
+	wlr_renderer_init_wl_display(renderer, wlserver->wl_display);
 
-	wlserver->compositor = wlr_compositor_create(wlserver->wl_display, wlserver->renderer);
+	wlserver->compositor = wlr_compositor_create(wlserver->wl_display, renderer);
 	wlr_data_device_manager_create(wlserver->wl_display);
 
-    wlserver->output_mngr = spider_wlroots_output_mngr_new();
+    wlserver->output_mngr = spider_wlroots_output_mngr_get_instance();
+    spider_assert(wlserver->output_mngr != NULL);
+    spider_wlroots_output_set_renderer(wlserver->output_mngr, renderer);
 	wl_signal_add(&wlserver->backend->events.new_output, 
                   spider_wlroots_output_mngr_get_output_listener(wlserver->output_mngr));
 
@@ -65,15 +68,17 @@ static bool spider_backend_wlroots_init(struct spider_server *server, void *data
 
     // create_cursor()
 
-	// wlserver->new_input.notify = handle_new_input;
+    /*
+	wlserver->new_input.notify = handle_new_input;
 	wlserver->new_input.notify = NULL;
 	wl_signal_add(&wlserver->backend->events.new_input, &wlserver->new_input);
 
 	wlserver->seat = wlr_seat_create(wlserver->wl_display, "seat0");
-	// wlserver->request_cursor.notify = handle_seat_request_cursor;
+	wlserver->request_cursor.notify = handle_seat_request_cursor;
 	wlserver->request_cursor.notify = NULL;
 	wl_signal_add(&wlserver->seat->events.request_set_cursor,
 			&wlserver->request_cursor);
+    */
 
 	/* TODO custom interface */
 	const char *socket = wl_display_add_socket_auto(wlserver->wl_display);
